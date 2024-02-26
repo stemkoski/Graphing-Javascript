@@ -1,0 +1,101 @@
+<html>
+<head>
+<script src="math.min.js"></script>
+</head>
+<body>
+
+Hello world.
+
+<br>
+
+<canvas id="myCanvas" width="400" height="400"></canvas>
+
+
+<script>
+
+let scope = { a: 3.142, b: 4 };
+let c = math.evaluate("sin(a * sqrt(b))", scope);           // 12
+console.log(c)
+
+var canvasWidth = 400;
+var canvasHeight = 400;
+
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d")
+
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
+
+// clear the canvas
+context.fillStyle = "#888888";
+
+context.fillRect(0,0, canvasWidth,canvasHeight);
+
+// drawing rectangles
+
+context.fillStyle = "#4488FF";
+context.fillRect(10,10, 200,50);
+
+context.lineWidth = 3;
+context.strokeStyle = "#FF0000";
+context.strokeRect(50,100, 120,40);
+
+context.font = "bold 64px Arial"
+context.strokeRect(20,250, 4,4);
+context.fillStyle = "#8800FF";
+context.strokeStyle = "#FF8888";
+// x,y coordinates of text position refer to left baseline by default
+context.strokeText("Hello, purple!", 20, 250);
+context.fillText("Hello, purple!", 20, 250);
+
+
+// linear interpolation
+function lerp(min, max, percent)
+{
+    return min + (max - min) * percent;
+}
+
+// inverse lerp
+function percent(min, max, value)
+{
+    return (value - min) / (max - min);
+}
+
+function convert(domainMin, domainMax, domainValue, rangeMin, rangeMax)
+{
+    return lerp( rangeMin, rangeMax, percent(domainMin, domainMax, domainValue) );
+}
+
+
+var mathXMin = -6, mathXMax = +6, mathYMin = -2, mathYMax = +2; 
+
+// graph y = f(x)
+// first attempt. points may be spaced apart. could draw lines between consecutive points.
+function graph1()
+{
+    // clear the canvas
+    context.fillStyle = "#CCCCFF";
+    context.fillRect(0,0, canvasWidth,canvasHeight);
+
+    for (let canvasX = 0; canvasX < canvasWidth; canvasX++)
+    {
+        let mathX = convert( 0, canvasWidth, canvasX, mathXMin, mathXMax );
+        let mathY = Math.sin(mathX);
+        // order of canvas conversion inverted because canvas Y axis points down
+        let canvasY = convert( mathYMin, mathYMax, mathY, canvasHeight, 0 );
+        context.fillStyle = "#0000FF"
+        context.fillRect(canvasX, canvasY, 2, 2);
+    }
+}
+
+/*
+// can horizontally align to "left", "center", "right"
+context.textAlign = "left";
+// can vertically align to "top", "middle", "bottom", 
+//  or "alphabetic" (default; ignores hanging letters & commas)
+context.textBaseline = "alphabetic";
+*/
+
+</script>
+</body>
+</html>
