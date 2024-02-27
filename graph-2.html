@@ -1,10 +1,11 @@
 <html>
     <head>
-    <title>Parametric Curve Grapher</title>
+    <title>Parametric Curve Grapher #2</title>
+    <script src="math.min.js"></script>
     </head>
 <body>
 
-Hello, world!
+Hello, world!!
 
 <br>
 
@@ -18,7 +19,7 @@ var context = canvas.getContext("2d");
 context.resetTransform();
 
 // clear the canvas
-context.fillStyle = "#DDEEFF";
+context.fillStyle = "#EEEEFF";
 context.fillRect(0,0, canvas.width, canvas.height);
 
 // auto math transform, so we can plot by math coordinates, not canvas/pixel coordinates
@@ -28,6 +29,21 @@ context.setTransform( canvas.width/(xMax - xMin), 0,
                       0, -canvas.height/(yMax - yMin),
                       -canvas.width/(xMax - xMin) * xMin, 
                       -canvas.height/(yMax - yMin) * yMin );
+
+
+/*
+context.lineWidth = 3;
+context.strokeStyle = "#FF0000";
+context.strokeRect(50,100, 120,40);
+
+context.font = "bold 64px Arial"
+context.strokeRect(20,250, 4,4);
+context.fillStyle = "#8800FF";
+context.strokeStyle = "#FF8888";
+// x,y coordinates of text position refer to left baseline by default
+context.strokeText("Hello, purple!", 20, 250);
+context.fillText("Hello, purple!", 20, 250);
+*/
 
 const mathUnitsPerPixel = (xMax - xMin) / canvas.width;
 
@@ -74,21 +90,21 @@ function graphSegments( pointArray, segmentColor, segmentThicknessPixels )
         graphSegment( pointArray[i], pointArray[i+1], segmentColor, segmentThicknessPixels );
 }
 
-// library-free implementation
+// library-based implementation
 class ParametricCurve
 {
-    constructor( xFunction, yFunction, minParamValue=0, maxParamValue=1 )
+    constructor( xFunctionString, yFunctionString, minParamValue=0, maxParamValue=1 )
     {
-        this.xFunction = xFunction;
-        this.yFunction = yFunction;
+        this.xFunctionString = xFunctionString;
+        this.yFunctionString = yFunctionString;
         this.minParamValue = minParamValue;
         this.maxParamValue = maxParamValue;
     }
 
     getPointAt( paramValue=0 )
     {
-        return { x: this.xFunction(paramValue), 
-                 y: this.yFunction(paramValue) };
+        return { x: math.evaluate(this.xFunctionString, {t: paramValue} ), 
+                 y: math.evaluate(this.yFunctionString, {t: paramValue} ) };
     }
 
     getPoints( numPoints=100 )
@@ -103,12 +119,24 @@ class ParametricCurve
     }
 }
 
-let F = new ParametricCurve( t => t*t*t - 3*t, t => t*t*t*t - 4*t*t, -2.1, 2.1 );
+let F = new ParametricCurve( "t^3 - 3t", "t^4 - 4t^2", -2.1, 2.1 );
 
 let Fpoints = F.getPoints(30);
 
-graphSegments( Fpoints );
-graphPoints( Fpoints );
+graphSegments( Fpoints )
+graphPoints( Fpoints )
+
+// graphSegment()
+
+
+
+/*
+// can horizontally align to "left", "center", "right"
+context.textAlign = "left";
+// can vertically align to "top", "middle", "bottom", 
+//  or "alphabetic" (default; ignores hanging letters & commas)
+context.textBaseline = "alphabetic";
+*/
 
 </script>
 </body>
