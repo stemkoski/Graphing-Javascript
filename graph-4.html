@@ -1,0 +1,301 @@
+<html>
+    <head>
+    <title>Parametric Curve Grapher #4</title>
+    <script src="math.min.js"></script>
+    </head>
+<body>
+
+Hello, world!!
+
+<br>
+
+<canvas id="myCanvas" width="400" height="400"></canvas>
+
+<script>
+
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+
+context.resetTransform();
+
+// clear the canvas
+context.fillStyle = "#EEEEFF";
+context.fillRect(0,0, canvas.width, canvas.height);
+
+// auto math transform, so we can plot by math coordinates, not canvas/pixel coordinates
+const xMin = -4, xMax = +4, yMin = -4, yMax = +4; 
+
+context.setTransform( canvas.width/(xMax - xMin), 0,
+                      0, -canvas.height/(yMax - yMin),
+                      -canvas.width/(xMax - xMin) * xMin, 
+                      -canvas.height/(yMax - yMin) * yMin );
+
+
+/*
+context.lineWidth = 3;
+context.strokeStyle = "#FF0000";
+context.strokeRect(50,100, 120,40);
+
+context.font = "bold 64px Arial"
+context.strokeRect(20,250, 4,4);
+context.fillStyle = "#8800FF";
+context.strokeStyle = "#FF8888";
+// x,y coordinates of text position refer to left baseline by default
+context.strokeText("Hello, purple!", 20, 250);
+context.fillText("Hello, purple!", 20, 250);
+*/
+
+const mathUnitsPerPixel = (xMax - xMin) / canvas.width;
+
+function graphPoint( point={x:0, y:0}, pointColor="#000000", pointRadiusPixels=4 )
+{
+    context.fillStyle = pointColor;
+
+    let r = pointRadiusPixels * mathUnitsPerPixel;
+
+    // for square points
+    // context.fillRect( point.x - r/2, point.y - r/2, r, r );
+    
+    // for round points
+    context.beginPath();
+    context.arc(point.x, point.y, r/2, 0, 2 * Math.PI);
+    context.closePath();
+    context.fill();
+}
+
+function graphPoints( pointArray, pointColor, pointRadiusPixels )
+{
+    for (let i = 0; i < pointArray.length; i++)
+        graphPoint( pointArray[i], pointColor, pointRadiusPixels );
+}
+
+function graphSegment( pointA={x:0, y:0}, pointB={x:1, y:1}, segmentColor="#666666",
+     segmentThicknessPixels=2 )
+{
+    context.strokeStyle = segmentColor;
+
+    let r = segmentThicknessPixels * mathUnitsPerPixel;
+    context.lineWidth = r;
+
+    context.beginPath(); // Start a new path
+    context.moveTo(pointA.x, pointA.y); // Move the pen to (30, 50)
+    context.lineTo(pointB.x, pointB.y); // Draw a line to (150, 100)
+    context.closePath();
+    context.stroke(); // Render the path
+}
+
+// TODO: rename "getPointArray" to pointDataArray or something similar? include points in a "position" field? (separate from tangent, normal, etc.)
+
+function graphSegments( pointArray, segmentColor, segmentThicknessPixels )
+{
+    for (let i = 0; i < pointArray.length - 1; i++)
+        graphSegment( pointArray[i], pointArray[i+1], segmentColor, segmentThicknessPixels );
+}
+
+function graphVector( basePoint={x:0, y:0}, vector={x:1, y:1}, vectorScale=1, vectorColor, vectorThicknessPixels )
+{
+    let endPoint = {x: basePoint.x + vectorScale * vector.x, y: basePoint.y + vectorScale * vector.y};
+    graphSegment(basePoint, endPoint, vectorColor, vectorThicknessPixels);
+}
+
+function graphTangentVectors( pointDataArray, vectorScale, segmentColor, segmentThicknessPixels )
+{
+    for (let i = 0; i < pointDataArray.length; i++)
+        graphVector( pointDataArray[i], pointDataArray[i].tangentVector, vectorScale, segmentColor, segmentThicknessPixels );
+}
+
+
+function distance( pointA={x:0, y:0}, pointB={x:1, y:1} )
+{
+    let vecAB = { x: pointB.x - pointA.x, y: pointB.y - pointA.y };
+
+    return getVectorLength( vecAB );
+}
+
+function getVectorLength( vec={x:1, y:0} )
+{
+    return Math.sqrt( vec.x * vec.x + vec.y * vec.y );
+}
+
+// returns value but also modifies original object
+function setVectorLength( vec={x:1, y:0}, newLength=1 )
+{
+    let originalLength = getVectorLength(vec);
+    
+    if (originalLength == 0)
+        return vec;
+    
+    vec.x *= (newLength/originalLength);    
+    vec.y *= (newLength/originalLength);    
+
+    return vec;
+}
+
+function findParameter( pointArray, arcLength )
+{
+    // out of bounds cases
+    if ( arcLength <= pointArray[ 0 ].totalArcLength )
+        return pointArray[0].t;
+    if ( arcLength >= pointArray[ pointArray.length - 1 ].totalArcLength )
+        return pointArray[ pointArray.length - 1 ].t;
+    // binary search a ParametricCurve's point array for arcLength L (already sorted)
+    // return an index i such that:
+    //    pointArray[i].totalArcLength <= L < pointArray[i+1].totalArcLength
+
+    // index values
+    let low  = 0;
+    let mid  = 0;
+    let high = pointArray.length - 1;
+
+    while (low <= high)
+    {
+        mid = Math.floor( (low + high) / 2 );
+
+        if ( pointArray[mid].totalArcLength <= arcLength
+          && arcLength < pointArray[mid+1].totalArcLength )
+        {
+            break; // mid contains the desired index
+        }
+        else if (arcLength < pointArray[mid].totalArcLength)
+        {
+            high = mid - 1; // continue checking the lower array half
+        }
+        else
+        {
+            low = mid + 1; // continue checking the upper array half
+        }
+    }
+
+    // estimate the parameter corresponding to arclength
+    //   by interpolating along the length of the segment   
+    let tA = pointArray[mid].t;
+    let arcLengthA = pointArray[mid].totalArcLength;
+    let tB = pointArray[mid+1].t;
+    let arcLengthB = pointArray[mid+1].totalArcLength;
+
+    let percent = (arcLength - arcLengthA) / (arcLengthB - arcLengthA);
+    let t = tA + (tB - tA) * percent;
+
+    return t;
+}
+
+// library-based implementation
+class ParametricCurve
+{
+    constructor( xFunctionString, yFunctionString, minParamValue=0, maxParamValue=1 )
+    {
+        this.xFunctionString = xFunctionString;
+        this.yFunctionString = yFunctionString;
+        this.minParamValue = minParamValue;
+        this.maxParamValue = maxParamValue;
+    }
+
+    getPointAt( tValue=0 )
+    {
+        return { t: tValue,
+                 x: math.evaluate(this.xFunctionString, {t: tValue} ), 
+                 y: math.evaluate(this.yFunctionString, {t: tValue} ),
+                 tangentVector: this.getTangentVectorAt(tValue) };
+    }
+
+    getTangentVectorAt( tValue )
+    {
+        const epsilon = 0.00001;
+        let deltaX = ( math.evaluate(this.xFunctionString, {t:tValue+epsilon} ) - math.evaluate(this.xFunctionString, {t:tValue} ) ) / epsilon;
+        let deltaY = ( math.evaluate(this.yFunctionString, {t:tValue+epsilon} ) - math.evaluate(this.yFunctionString, {t:tValue} ) ) / epsilon;
+        let tangentVector = { x: deltaX, y: deltaY };
+        setVectorLength( tangentVector, 1 );
+        return tangentVector;
+    }
+
+    // since this is 2D, don't need cross product: use negative reciprocal coordinate of tangent vector 
+    getNormalVectorAt( tValue, flip=false )
+    {
+        let tangentVector = this.getTangentVectorAt( tValue );
+
+        let normalVector = null;
+        if (flip)
+            normalVector = { x: -tangentVector.y, y: tangentVector.x };
+        else
+            normalVector = { x: tangentVector.y, y: -tangentVector.x };
+        
+        return normalVector;
+    }
+
+    getPoints( numPoints=100 )
+    {
+        let pointArray = [];
+
+        let deltaParam = (this.maxParamValue - this.minParamValue) / (numPoints - 1);
+        for (let paramValue = this.minParamValue; paramValue <= 1.00001 * this.maxParamValue; paramValue += deltaParam)
+        {
+            let point = this.getPointAt(paramValue);
+            // calculate values used for estimating equally spaced points along curve
+            if (pointArray.length == 0)
+            {           
+                point.segmentLength = 0;
+                point.totalArcLength = 0;
+            }
+            else
+            {
+                let previousPoint = pointArray[ pointArray.length - 1 ];
+                let segmentLength = distance( point, previousPoint );
+                // distance to previous point
+                point.segmentLength = segmentLength;
+                // total distance along curve to first point in array
+                point.totalArcLength = previousPoint.totalArcLength + segmentLength;
+            }
+            pointArray.push( point );
+        }
+        return pointArray;
+    }
+
+    getEquispacedPoints( numPoints=100 )
+    {
+        let initPointArray = this.getPoints( 2*numPoints );
+        let finalPointArray = [];
+        let totalArcLength = initPointArray[ initPointArray.length-1 ].totalArcLength;
+        let pointSpacing = totalArcLength / (numPoints - 1);
+        for (let pointIndex = 0; pointIndex < numPoints; pointIndex++)
+        {
+            let t = findParameter(initPointArray, pointIndex*pointSpacing);
+            let point = this.getPointAt( t );
+            finalPointArray.push( point );
+        }
+        return finalPointArray;
+    }
+}
+
+let F = new ParametricCurve( "t^3 - 3t", "t^4 - 4t^2", -2.1, 2.1 );
+
+let pointArrayF = F.getPoints(100);
+
+console.log(pointArrayF)
+
+graphSegments( pointArrayF, "#FF8888" )
+// graphPoints( pointArrayF, "#880000" )
+
+let pointArrayF2 = F.getPoints(20);
+graphTangentVectors(pointArrayF2)
+/*
+let pointArrayF2 = F.getEquispacedPoints(30);
+
+graphSegments( pointArrayF2, "#88FF88" )
+graphPoints( pointArrayF2, "#008800" )
+*/
+
+// graphSegment()
+
+
+
+/*
+// can horizontally align to "left", "center", "right"
+context.textAlign = "left";
+// can vertically align to "top", "middle", "bottom", 
+//  or "alphabetic" (default; ignores hanging letters & commas)
+context.textBaseline = "alphabetic";
+*/
+
+</script>
+</body>
+</html>

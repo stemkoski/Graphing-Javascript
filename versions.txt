@@ -1,0 +1,12 @@
+graph.html: simple grapher of points and/or segments; includes class ParametricCurve
+
+graph-2.html: rewrite using math.js (https://mathjs.org/): allows coordinate function input as strings
+
+graph-3.html: added ParametricCurve function getEquispacedPoints(numPoints), includes calculating segment lengths and estimating total arclength from beginning of curve to each point (needed to generate equally spaced points)
+
+graph-4.html: calculate tangent and normal vectors to curve at sample points. use parallel transport algorithm! or not? See: https://legacy.cs.indiana.edu/ftp/techreports/TR425.pdf , and especially https://janakiev.com/blog/framing-parametric-curves/ (which builds on the paper). 
+But there is no twisting, so... no sudden directional changes? (at least not for 2D curves). Then graph the frames.
+
+
+
+
