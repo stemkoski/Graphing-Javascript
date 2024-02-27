@@ -31,20 +31,6 @@ context.setTransform( canvas.width/(xMax - xMin), 0,
                       -canvas.height/(yMax - yMin) * yMin );
 
 
-/*
-context.lineWidth = 3;
-context.strokeStyle = "#FF0000";
-context.strokeRect(50,100, 120,40);
-
-context.font = "bold 64px Arial"
-context.strokeRect(20,250, 4,4);
-context.fillStyle = "#8800FF";
-context.strokeStyle = "#FF8888";
-// x,y coordinates of text position refer to left baseline by default
-context.strokeText("Hello, purple!", 20, 250);
-context.fillText("Hello, purple!", 20, 250);
-*/
-
 const mathUnitsPerPixel = (xMax - xMin) / canvas.width;
 
 function graphPoint( point={x:0, y:0}, pointColor="#000000", pointRadiusPixels=4 )
@@ -125,18 +111,6 @@ let Fpoints = F.getPoints(30);
 
 graphSegments( Fpoints )
 graphPoints( Fpoints )
-
-// graphSegment()
-
-
-
-/*
-// can horizontally align to "left", "center", "right"
-context.textAlign = "left";
-// can vertically align to "top", "middle", "bottom", 
-//  or "alphabetic" (default; ignores hanging letters & commas)
-context.textBaseline = "alphabetic";
-*/
 
 </script>
 </body>
