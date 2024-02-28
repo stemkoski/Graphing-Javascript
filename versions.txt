@@ -13,4 +13,7 @@ graph-6.html: add getHoistPosition(u,v) - domain [0,1] x [0,1] - and test with g
 
 graph-7.html: load an image, create a ColorSampler to extra pixel data (similar to texture in GPU shader - first pass: nearest neighbor, second pass bilinear filtering)
 
+graph-8.html: cleaning up the code from version 7. adding in setTimeout, otherwise single-threading blocks animation loop from updating and page freezes during computations.
+TODO: add timer to code to calculate total runtime
+TODO: investigate speeding up hoist calculation - replace getVertexAtPercentArclength with getApproxVertex, by pre-calculating many many points (10,000?)
 
