@@ -9,6 +9,8 @@ calculate and graph tangent and normal vectors to curve at sample points.
 
 graph-5.html: redo graph-4, add percentArclength parameter in [0,1] to each vertex in array; automatically generate an internal vertex array for a function, refactor binary search into getVertexAtPercentArclength, requires lots of lerping, and then redo getEquispacedVertexArray
 
+graph-6.html: add getHoistPosition(u,v) - domain [0,1] x [0,1] - and test with graphHoistPoints(F, uPointNum, vPointNum). Later, may need to add 'backfilling' to get enough points around curve.
 
+graph-7.html: load an image, create a ColorSampler to extra pixel data (similar to texture in GPU shader - first pass: nearest neighbor, second pass bilinear filtering)
 
 
