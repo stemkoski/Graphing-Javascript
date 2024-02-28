@@ -22,14 +22,14 @@ context.resetTransform();
 context.fillStyle = "#EEEEFF";
 context.fillRect(0,0, canvas.width, canvas.height);
 
-// auto math transform, so we can plot by math coordinates, not canvas/pixel coordinates
-// set all axes
-const scale = 5;
-const xMin = -scale, xMax = +scale, yMin = -scale, yMax = +scale; 
+// set all axis lengths equally
+const axisLength = 5;
+const xMin = -axisLength, xMax = +axisLength, yMin = -axisLength, yMax = +axisLength; 
 
 // set individual axis bounds
 // const xMin = -4, xMax = +4, yMin = -4, yMax = +4; 
 
+// auto math transform, so we can plot by math coordinates, not canvas/pixel coordinates
 context.setTransform( canvas.width/(xMax - xMin), 0,
                       0, -canvas.height/(yMax - yMin),
                       -canvas.width/(xMax - xMin) * xMin, 
@@ -122,15 +122,15 @@ function graphVertexArrayEverything( paramFunc, numPoints=100, numFrames=10 )
 {
     let vertexArray = paramFunc.getVertexArray( numPoints );
     
-    let vertexArray2 = paramFunc.getVertexArray( 20  );
+    let vertexArray2 = paramFunc.getVertexArray( numFrames );
 
-    let vertexArray3 = paramFunc.getEquispacedVertexArray( 20 );
+    let vertexArray3 = paramFunc.getEquispacedVertexArray( numFrames );
     
     let scale = 0.5;
-    graphVertexArraySegments(vertexArray, "#FF4444", 2);
-    // graphVertexArrayNormals(vertexArray2, scale, "#0000FF", 3);
-    // graphVertexArrayTangents(vertexArray2, scale, "#008800", 3);
-    graphVertexArrayPoints(vertexArray3, "#000000", 6);
+    graphVertexArraySegments(vertexArray, "#FF4444", 1);
+    graphVertexArrayNormals(vertexArray3, scale, "#0000FF", 8);
+    graphVertexArrayTangents(vertexArray3, scale, "#008800", 8);
+    graphVertexArrayPoints(vertexArray3, "#FF0000", 16); 
 }
 
 // generic math methods
@@ -268,8 +268,9 @@ class ParametricFunction
         let vertexArray = [];
 
         let tDelta = (this.tMax - this.tMin) / (numVerts - 1);
-        for (let tValue = this.tMin; tValue <= 1.00001 * this.tMax; tValue += tDelta)
+        for (let vertexIndex = 0; vertexIndex < numVerts; vertexIndex++)
         {
+            let tValue = this.tMin + vertexIndex * tDelta;
             let vertex = this.getVertexAt(tValue);
             // calculate values used for estimating equally spaced vertices along curve
             if (vertexArray.length == 0)
@@ -293,9 +294,9 @@ class ParametricFunction
 
     getEquispacedVertexArray( numVerts=100 )
     {
-        let initVertexArray = this.getVertexArray( 2*numVerts );
+        let initVertexArray = this.getVertexArray( 1000 );
         let finalVertexArray = [];
-        let totalArcLength = vertexArray[ vertexArray.length-1 ].totalArcLength;
+        let totalArcLength = initVertexArray[ initVertexArray.length-1 ].totalArcLength;
         let vertexSpacing = totalArcLength / (numVerts - 1);
         for (let vertexIndex = 0; vertexIndex < numVerts; vertexIndex++)
         {
@@ -312,13 +313,10 @@ class ParametricFunction
 let F = new ParametricFunction( "t^3 - 3t", "t^4 - 4t^2", -2.1, 2.1 );
 
 // inspect in JS console
-let vertexArray = F.getVertexArray(10);
-console.log(vertexArray);
+// let vertexArray = F.getVertexArray(10);
+// console.log(vertexArray);
 
-graphVertexArrayEverything(F, 100, 10); 
-
-
-
+graphVertexArrayEverything(F, 100, 11  ); 
 
 /*
 // can horizontally align to "left", "center", "right"
