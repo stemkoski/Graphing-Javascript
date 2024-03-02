@@ -459,12 +459,11 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
     {
         let u = uIndex / (uPointNum - 1);
 
-        // optional: add a setTimeout to slow down the graphing, to watch progress along curve        
+        // optional: use setTimeout to slow down the graphing, to watch progress along curve        
         setTimeout( function() {
 
             for (let vIndex = 0; vIndex < vPointNum; vIndex++)
-            {
-                
+            
                 let v = vIndex / (vPointNum - 1);
                 let position = paramFunc.getHoistPosition( u, v, hoistRadius ); // this takes lots of time!
                 //let position = {x:0, y:0}
@@ -476,13 +475,12 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
                 let hexColor = getPixelData( imageData, rowNum, columnNum );
                 // let hexColor = "#FF0000"
                 graphPoint( position, hexColor, 2 );
-                
             }
 
-         }, 3 )
+        // optional: use setTimeout to slow down the graphing, to watch progress along curve        
+        }, 3 )
     }
 
-    updatesDiv.innerText = "afinished!" 
 }
 
 /*
