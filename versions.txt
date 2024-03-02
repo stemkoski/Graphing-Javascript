@@ -18,3 +18,5 @@ TODO: add timer to code to calculate total runtime
 TODO: investigate speeding up hoist calculation - replace getVertexAtPercentArclength with getApproxVertex, by pre-calculating many many points (10,000?)
 
 graph-9.html: code cleanup
+
+graph-A.html: add jQueryUI
