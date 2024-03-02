@@ -96,7 +96,6 @@ function graphVector( basePoint={x:0, y:0}, vector={x:1, y:1}, vectorScale=1, ve
     graphSegment(basePoint, endPoint, vectorColor, vectorThicknessPixels);
 }
 
-
 function graphVertexArrayPoints( vertexArray, pointColor, pointRadiusPixels )
 {
     for (let i = 0; i < vertexArray.length; i++)
@@ -345,20 +344,6 @@ class ParametricFunction
     }
 }
 
-function graphHoistPoints( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
-{
-    for (let uIndex = 0; uIndex < uPointNum; uIndex++)
-    {
-        let uPercent = uIndex / (uPointNum - 1);
-        for (let vIndex = 0; vIndex < vPointNum; vIndex++)
-        {
-            let vPercent = vIndex / (vPointNum - 1);
-            let position = paramFunc.getHoistPosition( uPercent, vPercent, hoistRadius );
-            graphPoint( position, "#FF0000", 4 );
-        }
-    }
-}
-
 
 // ------------------ //
 // test visualization //
@@ -366,26 +351,11 @@ function graphHoistPoints( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5
 
 let F = new ParametricFunction( "t^3 - 3t", "t^4 - 4t^2", -2.1, 2.1, true );
 
-// inspect in JS console
-let va = F.getVertexArray(20);
-console.log(va);
-
-// graphVertexArrayEverything( F, 100, 12 ); 
-
 graphVertexArraySegments( F.getVertexArray(100) );
-
-// graphHoistPoints( F, 500*.70, 10*.80, 0.5 ); // also need to put in point color and size
 
 // this is for demo purposes only, resolution is poor
 // graphHoistPoints( F, 350, 8, 0.5 );
 
-console.log( F.getTotalArcLength() )
-
-// given a point size of N (default 4 pixels), approx optimal uPointNum to cover area
-//  (will be more in areas of large curvature, which spaces the points out more; double to be safe)
-console.log( F.getTotalArcLength() * pixelsPerMathUnit / 4 )
-// optimal vPointNum: 2 * hoist radius * pixelsPerMathUnit / point DIAMETER
-console.log( 2 * 0.5 * pixelsPerMathUnit / (2*4))
 
 // NOTE: this code only works online or when running a local server
 //  (run server.py and open localhost:8337 in a browser, the select this file)
@@ -475,8 +445,6 @@ function samplePixelDataRGB_Bilinear(imageData, u, v, repeatU=1, repeatV=1)
 
 }
 
-
-
 function convertRGBtoHexString( RGB )
 {
     return "#" + RGB.r.toString(16).padStart(2, "0")
@@ -485,6 +453,20 @@ function convertRGBtoHexString( RGB )
 }
 
 // TODO: simplify by just one function with optional color image
+
+function graphHoistPoints( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
+{
+    for (let uIndex = 0; uIndex < uPointNum; uIndex++)
+    {
+        let uPercent = uIndex / (uPointNum - 1);
+        for (let vIndex = 0; vIndex < vPointNum; vIndex++)
+        {
+            let vPercent = vIndex / (vPointNum - 1);
+            let position = paramFunc.getHoistPosition( uPercent, vPercent, hoistRadius );
+            graphPoint( position, "#FF0000", 4 );
+        }
+    }
+}
 
 function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
 {
