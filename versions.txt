@@ -17,3 +17,4 @@ graph-8.html: cleaning up the code from version 7. adding in setTimeout, otherwi
 TODO: add timer to code to calculate total runtime
 TODO: investigate speeding up hoist calculation - replace getVertexAtPercentArclength with getApproxVertex, by pre-calculating many many points (10,000?)
 
+graph-9.html: code cleanup
