@@ -174,7 +174,9 @@ class ParametricFunction
     constructor( xFunctionString, yFunctionString, tMin=0, tMax=1, flipNormals=false )
     {
         this.xFunctionString = xFunctionString;
+        this.xFunction = math.parse(xFunctionString).compile();
         this.yFunctionString = yFunctionString;
+        this.yFunction = math.parse(yFunctionString).compile();
         this.tMin = tMin;
         this.tMax = tMax;
         this.flipNormals = flipNormals;
@@ -182,15 +184,15 @@ class ParametricFunction
 
     getPositionAt( tValue=0 )
     {
-        return { x: math.evaluate(this.xFunctionString, {t: tValue} ), 
-                 y: math.evaluate(this.yFunctionString, {t: tValue} ) };
+        return { x: this.xFunction.evaluate( {t: tValue} ), 
+                 y: this.yFunction.evaluate( {t: tValue} ) };
     }
 
     getTangentVectorAt( tValue )
     {
         const epsilon = 0.00001;
-        let deltaX = ( math.evaluate(this.xFunctionString, {t:tValue+epsilon} ) - math.evaluate(this.xFunctionString, {t:tValue} ) ) / epsilon;
-        let deltaY = ( math.evaluate(this.yFunctionString, {t:tValue+epsilon} ) - math.evaluate(this.yFunctionString, {t:tValue} ) ) / epsilon;
+        let deltaX = ( this.xFunction.evaluate( {t:tValue+epsilon} ) - this.xFunction.evaluate( {t:tValue} ) ) / epsilon;
+        let deltaY = ( this.yFunction.evaluate( {t:tValue+epsilon} ) - this.yFunction.evaluate( {t:tValue} ) ) / epsilon;
         let tangentVector = { x: deltaX, y: deltaY };
         setVectorLength( tangentVector, 1 );
         return tangentVector;
@@ -411,7 +413,7 @@ image.onload = function()
 
     // console.log(imageData)
     // console.log( getPixelData( imageData, 0, 0 ) )
-    graphHoistImage( F, imageData, 1000, 30, .5 ); // 1200, 25
+    graphHoistImage( F, imageData, 2000, 30, .5 ); // 1200, 25
 }
 
 // imageData: [r0,g0,b0,a0, r1,g1,b1,a1, r2,g2,b2,a2, ...]
@@ -419,15 +421,33 @@ image.onload = function()
 // return: hex code for pixel
 function getPixelData(imageData, rowNum, columnNum)
 {
-    let pixelNum = rowNum * imageData.width + columnNum;
-    let index = pixelNum * 4;
-    //   red = imageData.data[index]
-    // green = imageData.data[index+1]
-    //  blue = imageData.data[index+2]
-    // alpha = imageData.data[index+3]
-    return "#" + imageData.data[index].toString(16).padStart(2, "0")
-               + imageData.data[index+1].toString(16).padStart(2, "0")
-               + imageData.data[index+2].toString(16).padStart(2, "0");
+    let pixelStartIndex = 4 * (rowNum * imageData.width + columnNum);
+    //   red = imageData.data[pixelStartIndex]
+    // green = imageData.data[pixelStartIndex+1]
+    //  blue = imageData.data[pixelStartIndex+2]
+    // alpha = imageData.data[pixelStartIndex+3]
+    return "#" + imageData.data[pixelStartIndex].toString(16).padStart(2, "0")
+               + imageData.data[pixelStartIndex+1].toString(16).padStart(2, "0")
+               + imageData.data[pixelStartIndex+2].toString(16).padStart(2, "0");
+}
+
+function getPixelDataRGB(imageData, rowNum, columnNum)
+{
+    let pixelStartIndex = 4 * (rowNum * imageData.width + columnNum);
+    //   red = imageData.data[pixelStartIndex]
+    // green = imageData.data[pixelStartIndex+1]
+    //  blue = imageData.data[pixelStartIndex+2]
+    // alpha = imageData.data[pixelStartIndex+3]
+    return { r: imageData.data[pixelStartIndex], 
+             g: imageData.data[pixelStartIndex+1], 
+             b: imageData.data[pixelStartIndex+2]  };
+}
+
+function convertRGBtoHexString( RGB )
+{
+    return "#" + RGB.r.toString(16).padStart(2, "0")
+               + RGB.g.toString(16).padStart(2, "0")
+               + RGB.b.toString(16).padStart(2, "0");
 }
 
 // TODO: simplify by just one function with optional color image
@@ -438,24 +458,28 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
     for (let uIndex = 0; uIndex < uPointNum; uIndex++)
     {
         let u = uIndex / (uPointNum - 1);
-        // setTimeout( function() { updatesDiv.innerText = u + " % complete" }, 1 )
-        
-        for (let vIndex = 0; vIndex < vPointNum; vIndex++)
-        {
-            setTimeout( function() {
-            let v = vIndex / (vPointNum - 1);
-            let position = paramFunc.getHoistPosition( u, v, hoistRadius ); // this takes lots of time!
-            //let position = {x:0, y:0}
-            let columnNum = Math.floor(u*(imageData.width-1));
-            let repeat = 3;
-            columnNum = repeat*columnNum % imageData.width;
-            let rowNum = Math.floor( (1-v)*(imageData.height-1) );
-            // console.log("pixel ", rowNum, columnNum)
-            let hexColor = getPixelData( imageData, rowNum, columnNum );
-            // let hexColor = "#FF0000"
-            graphPoint( position, hexColor, 2 );
-            }, 1 )
-        }
+
+        // optional: add a setTimeout to slow down the graphing, to watch progress along curve        
+        setTimeout( function() {
+
+            for (let vIndex = 0; vIndex < vPointNum; vIndex++)
+            {
+                
+                let v = vIndex / (vPointNum - 1);
+                let position = paramFunc.getHoistPosition( u, v, hoistRadius ); // this takes lots of time!
+                //let position = {x:0, y:0}
+                let columnNum = Math.floor(u*(imageData.width-1));
+                let repeat = 3;
+                columnNum = repeat*columnNum % imageData.width;
+                let rowNum = Math.floor( (1-v)*(imageData.height-1) );
+                // console.log("pixel ", rowNum, columnNum)
+                let hexColor = getPixelData( imageData, rowNum, columnNum );
+                // let hexColor = "#FF0000"
+                graphPoint( position, hexColor, 2 );
+                
+            }
+
+         }, 3 )
     }
 
     updatesDiv.innerText = "afinished!" 
