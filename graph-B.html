@@ -105,13 +105,23 @@
 
 <canvas id="imageCanvas"></canvas>
 
+<br>
 
-<!-- Initialize jQueryUI components and interactivity -->
+<canvas id="myCanvas" width="600" height="600"></canvas>
+
+
 <script>
-let myInput = $( "input" );
-//myInput.addClass( "ui-widget ui-widget-content ui-corner-all" );
-myInput.addClass( "ui-corner-all" );
-myInput.css( {padding: 6} );
+
+// global objects
+
+var canvas = document.getElementById("myCanvas");
+var context = canvas.getContext("2d");
+
+// Initialize jQueryUI components and interactivity ----------------
+
+let allInputElements = $( "input" );
+allInputElements.addClass( "ui-corner-all" );
+allInputElements.css( {padding: 6} );
 
 let graphButton = $( "#graphButton" );
 graphButton.button();
@@ -127,27 +137,78 @@ $(".colorPicker").spectrum({
 
 function getAxisData()
 {
-    return { xMin: Number( $("#xMinInput").val() ),
-             xMax: Number( $("#xMaxInput").val() ),
-             yMin: Number( $("#yMinInput").val() ),
-             yMax: Number( $("#yMaxInput").val() ) };
+    let xMin = Number( $("#xMinInput").val() );
+    let xMax = Number( $("#xMaxInput").val() );
+    let yMin = Number( $("#yMinInput").val() );
+    let yMax = Number( $("#yMaxInput").val() );
+    let xRange = xMax - xMin;
+    let yRange = yMax - yMin;
+    return { xMin, xMax, yMin, yMax, xRange, yRange };
 }
 
 function updateAxisData()
 {
     let axis = getAxisData();
+    console.log(axis);
+    context.setTransform( 
+        canvas.width/axis.xRange, 0,
+        0, -canvas.height/axis.yRange,
+        -canvas.width/axis.xRange * axis.xMin, 
+        +canvas.height/axis.yRange * axis.yMax );
 
+}
+
+function clearCanvas()
+{
+    let backgroundColor = "#EEEEFF";
+    let axis = getAxisData();
+    context.fillStyle = backgroundColor;
+    // large enough to cover any preset area in case of axis change
+    context.fillRect(-1000, -1000, 2000, 2000);
 }
 
 function drawAxes()
 {
-    
+    let axisColor;
+    let axisThickness;
+    updateAxisData();
+    let axis = getAxisData();
+    // x-axis
+    graphSegment( {x:axis.xMin, y:0}, {x:axis.xMax, y:0} );
+    // arrowHead length
+    let s = 0.02;
+    // arrowHead
+    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:+s*axis.yRange});
+    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:-s*axis.yRange});
+    // y-axis
+    graphSegment( {x:0, y:axis.yMin}, {x:0, y:axis.yMax} );
+    // arrowHead
+    graphVector( {x:0, y:axis.yMax}, {x:+s*axis.xRange, y:-s*axis.yRange});
+    graphVector( {x:0, y:axis.yMax}, {x:-s*axis.xRange, y:-s*axis.yRange});
+
+}
+
+// depends on size, etc.
+function drawTickMarks()
+{
+    let axisColor;
+    let axisThickness;
+    updateAxisData();
+    let axis = getAxisData();
+    for (let x = Math.floor(axis.xMin); x <= Math.ceil(axis.xMax); x++)
+        graphPoint( {x:x, y:0}, "#FF0000", 5);
+    // y-axis
+    for (let y = Math.floor(axis.yMin); y <= Math.ceil(axis.yMax); y++)
+        graphPoint( {x:0, y:y}, "#FF0000", 5);
 }
 
 function drawFunction()
 {
     clearCanvas();
-    
+    // if true
+    drawAxes();
+    drawTickMarks();
+
     let xFuncString = $("#xFuncInput").val();
     let yFuncString = $("#yFuncInput").val();
     let tMin = Number( $("#tMinInput").val() );
@@ -164,7 +225,10 @@ function drawFunction()
 function graphText()
 {
     clearCanvas();
-    
+    // if true
+    drawAxes();
+    drawTickMarks();
+   
     let xFuncString = $("#xFuncInput").val();
     let yFuncString = $("#yFuncInput").val();
     let tMin = Number( $("#tMinInput").val() );
@@ -218,21 +282,6 @@ curveSelect.on( "selectmenuchange",
 
 
 
-</script>
-
-
-
-
-<br>
-<canvas id="myCanvas" width="600" height="600"></canvas>
-
-<script>
-
-var canvas = document.getElementById("myCanvas");
-var context = canvas.getContext("2d");
-
-context.resetTransform();
-
 
 
 // set all axis lengths equally
@@ -248,12 +297,6 @@ context.setTransform( canvas.width/(xMax - xMin), 0,
                       -canvas.height/(yMax - yMin) * yMin );
 
 
-// clear the canvas
-function clearCanvas()
-{
-    context.fillStyle = "#EEEEFF";
-    context.fillRect(xMin, yMin, (xMax-xMin), (yMax-yMin));
-}
 
 clearCanvas();
 
