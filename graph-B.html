@@ -102,7 +102,8 @@
     <legend> Text </legend>
     <div class="row">
         <div class="border">Text: <input type="text" id="textInput" size="40" value="Text Along the Curve"></input></div>
-        Repeat Count: [ 1 ]
+        <div class="border"> Times to Repeat Text: <input type="text" id="repeatCount" size="2" value="3"></input> </div>
+
     </div>
     <div class="row">
         <div class="border">
@@ -132,21 +133,30 @@
     </div>
     <div class="row">
         <!-- Background Style: Solid Color, Rainbow Gradient (Horiz.), Rainbow Gradient (Vert.), Background Color (if Solid) [ ] -->
+        <div class="border">
+            <label for="backgroundStyleSelect">Text Background Style: &nbsp;</label>
+            <select id="backgroundStyleSelect" class="selectMenu">
+                <option>Solid Color</option>
+                <option>Gradient (Horizontal)</option>
+                <option>None</option>
+            </select>
+        </div>
         <div class="border"> Background Color: <input type='text' id="textBackgroundColor" class="colorPicker" /> </div>
     </div>
 </fieldset>
 
-
-<hr>
 <center>
-<button id="drawCurveButton">Draw Curve</button>
-<button id="drawTextAlongCurveButton">Draw Text Along Curve</button>
+<hr>
+<button id="clearDrawAreaButton">Clear Draw Area</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawAxesButton">Draw Axes</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawCurveButton">Draw Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawTextAlongCurveButton">Draw Text Along Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
 <button id="saveImageButton">Save Image</button>
+<hr>
+<canvas id="textCanvas"></canvas>
+<hr>
+<canvas id="curveCanvas" width="600" height="600"></canvas>
 </center>
-<hr>
-<center><canvas id="textCanvas"></canvas></center>
-<hr>
-<center><canvas id="curveCanvas" width="600" height="600"></canvas></center>
 
 <script>
 
@@ -170,6 +180,8 @@ $( ".checkbox" ).checkboxradio().css( {padding: 12} );;
 $( ".colorPicker" ).spectrum( {color: "#000000"} );
 
 // assign functions to buttons
+$( "#clearDrawAreaButton" ).on( "click", clearCanvas );
+$( "#drawAxesButton" ).on( "click", drawAxes );
 $( "#drawCurveButton" ).on( "click", drawCurve );
 $( "#drawTextAlongCurveButton" ).on( "click", drawTextAlongCurve );
 $( "#drawTextButton" ).on( "click", drawText ); // render text into textCanvas
@@ -188,9 +200,12 @@ $( "#fontColor" ).on( "change", drawText );
 $( "#drawBorderCheckbox" ).on( "change", drawText );
 $( "#borderColor" ).on( "change", drawText );
 $( "#borderThickness" ).on( "input", drawText );
+$( "#backgroundStyleSelect" ).on( "selectmenuchange", drawText );
 $( "#textBackgroundColor" ).on( "change", drawText );
 
-// draw text right away
+// immediate tasks
+updateAxisData();
+clearCanvas();
 drawText();
 
 function drawText()
@@ -220,8 +235,17 @@ function drawText()
     textCanvas.height = height + borderThickness + 2*canvasPadding;
 
     // clear text canvas
-    textContext.fillStyle = backgroundColor;
-    textContext.fillRect(0,0, textCanvas.width+1, textCanvas.height+1);
+    let backgroundStyle = $("#backgroundStyleSelect").val();
+
+    if (backgroundStyle == "Solid Color")
+    {
+        textContext.fillStyle = backgroundColor;
+        textContext.fillRect(0,0, textCanvas.width+1, textCanvas.height+1);
+    }
+    else if (backgroundStyle == "None")
+    {
+        textContext.clearRect(0,0, textCanvas.width+1, textCanvas.height+1);
+    }
     // after resizing canvas, all context properties are reset, so we change them again
     textContext.font = fontStyle;
     textContext.fillStyle = fontColor;
@@ -267,7 +291,7 @@ function updateAxisData()
 
 function clearCanvas()
 {
-    let backgroundColor = "#EEEEFF";
+    let backgroundColor = "#EEEEFF"; // TODO
     let axis = getAxisData();
     context.fillStyle = backgroundColor;
     // large enough to cover any preset area in case of axis change
@@ -293,6 +317,10 @@ function drawAxes()
     graphVector( {x:0, y:axis.yMax}, {x:+s*axis.xRange, y:-s*axis.yRange});
     graphVector( {x:0, y:axis.yMax}, {x:-s*axis.xRange, y:-s*axis.yRange});
 
+    // draw tick marks?
+    let drawTheTickMarks = true;
+    if (drawTheTickMarks)
+        drawTickMarks();
 }
 
 // depends on size, etc.
@@ -311,11 +339,6 @@ function drawTickMarks()
 
 function drawCurve()
 {
-    clearCanvas();
-    // if true
-    drawAxes();
-    drawTickMarks();
-
     let xFuncString = $("#xFuncInput").val();
     let yFuncString = $("#yFuncInput").val();
     let tMin = Number( $("#tMinInput").val() );
@@ -325,17 +348,20 @@ function drawCurve()
     let curveThickness = Number( $("#curveThickness").val() );
 
     let F = new ParametricFunction( xFuncString, yFuncString, tMin, tMax, true );
-    let vertexArray = F.getVertexArray(100);
+    // TODO
+    let samplePoints = 1000;
+    let vertexArray = F.getVertexArray(samplePoints);
     graphVertexArraySegments( vertexArray, curveColor, curveThickness );
 }
 
 // poor name
 function drawTextAlongCurve()
 {
-    clearCanvas();
+    //  updateAxisData();
+    // clearCanvas();
     // if true
-    drawAxes();
-    drawTickMarks();
+    // drawAxes();
+   //  drawTickMarks();
    
     let xFuncString = $("#xFuncInput").val();
     let yFuncString = $("#yFuncInput").val();
@@ -348,12 +374,12 @@ function drawTextAlongCurve()
     
     // TODO: textImageSamplePoints[X|Y]
     
-    graphVertexArraySegments( F.getVertexArray(500) );
+    // graphVertexArraySegments( F.getVertexArray(500) );
 
     let imageHeightOnCurve = Number( $("#fontHeightOnCurve").val() );
-
+    let repeatCount = Number( $("#repeatCount").val() );
     
-    graphHoistImage( F, imageData, 4000, 60, imageHeightOnCurve );
+    graphHoistImage( F, imageData, 4000, 60, imageHeightOnCurve, repeatCount );
 
 }
 
@@ -401,7 +427,6 @@ $( "#curveSelect" ).on( "selectmenuchange",
     }
 );
 
-clearCanvas();
 
 
 // var mathUnitsPerPixel = (xMax - xMin) / canvas.width;
@@ -703,20 +728,7 @@ class ParametricFunction
 
 // imageData: [r0,g0,b0,a0, r1,g1,b1,a1, r2,g2,b2,a2, ...]
 //   where each value is an int from 0 to 255
-// return: hex code for pixel
-function getPixelData(imageData, rowNum, columnNum)
-{
-    let pixelStartIndex = 4 * (rowNum * imageData.width + columnNum);
-    //   red = imageData.data[pixelStartIndex]
-    // green = imageData.data[pixelStartIndex+1]
-    //  blue = imageData.data[pixelStartIndex+2]
-    // alpha = imageData.data[pixelStartIndex+3]
-    return "#" + imageData.data[pixelStartIndex].toString(16).padStart(2, "0")
-               + imageData.data[pixelStartIndex+1].toString(16).padStart(2, "0")
-               + imageData.data[pixelStartIndex+2].toString(16).padStart(2, "0");
-}
-
-function getPixelDataRGB(imageData, rowNum, columnNum)
+function getPixelDataRGBA(imageData, rowNum, columnNum)
 {
     let pixelStartIndex = 4 * (rowNum * imageData.width + columnNum);
     //   red = imageData.data[pixelStartIndex]
@@ -725,10 +737,11 @@ function getPixelDataRGB(imageData, rowNum, columnNum)
     // alpha = imageData.data[pixelStartIndex+3]
     return { r: imageData.data[pixelStartIndex], 
              g: imageData.data[pixelStartIndex+1], 
-             b: imageData.data[pixelStartIndex+2]  };
+             b: imageData.data[pixelStartIndex+2],
+             a: imageData.data[pixelStartIndex+3]  };
 }
 
-function samplePixelDataRGB_Nearest(imageData, u, v, repeatU=1, repeatV=1)
+function samplePixelDataRGBA_Nearest(imageData, u, v, repeatU=1, repeatV=1)
 {
     let columnNum = Math.round( u*(imageData.width-1) );
     let rowNum = Math.round( (1-v)*(imageData.height-1) );
@@ -736,10 +749,10 @@ function samplePixelDataRGB_Nearest(imageData, u, v, repeatU=1, repeatV=1)
     columnNum = (repeatU * columnNum) % imageData.width;
     rowNum = (repeatV * rowNum) % imageData.height;
 
-    return getPixelDataRGB(imageData, rowNum, columnNum);
+    return getPixelDataRGBA(imageData, rowNum, columnNum);
 }
 
-function samplePixelDataRGB_Bilinear(imageData, u, v, repeatU=1, repeatV=1)
+function samplePixelDataRGBA_Bilinear(imageData, u, v, repeatU=1, repeatV=1)
 {
     v = 1 - v; // need to invert vertical axis
     let rawColumnNum = repeatU * u*(imageData.width-1) % imageData.width;
@@ -747,29 +760,36 @@ function samplePixelDataRGB_Bilinear(imageData, u, v, repeatU=1, repeatV=1)
     let columnNum = Math.floor( rawColumnNum );
     let rowNum = Math.floor( rawRowNum );
     // get colors of four closest pixels
-    let C00 = getPixelDataRGB(imageData, rowNum+0, columnNum+0); // bottom left 
-    let C10 = getPixelDataRGB(imageData, rowNum+0, columnNum+1); // bottom right
-    let C01 = getPixelDataRGB(imageData, Math.max(0,rowNum-1), columnNum+0); // top left
-    let C11 = getPixelDataRGB(imageData, Math.max(0,rowNum-1), columnNum+1); // top right
-    let fracU = rawColumnNum % 1, fracV = 1 - rawRowNum % 1; // this is correct; tested at large scales 
+    let C00 = getPixelDataRGBA(imageData, rowNum+0, columnNum+0); // bottom left 
+    let C10 = getPixelDataRGBA(imageData, rowNum+0, columnNum+1); // bottom right
+    let C01 = getPixelDataRGBA(imageData, Math.max(0,rowNum-1), columnNum+0); // top left
+    let C11 = getPixelDataRGBA(imageData, Math.max(0,rowNum-1), columnNum+1); // top right
+    let fracU = rawColumnNum % 1, fracV = 1 - rawRowNum % 1; // this is correct; tested at large scales
+
     let Cu0 = { r: Math.round( (1-fracU)*C00.r + fracU*C10.r ),
                 g: Math.round( (1-fracU)*C00.g + fracU*C10.g ),
-                b: Math.round( (1-fracU)*C00.b + fracU*C10.b )  };
+                b: Math.round( (1-fracU)*C00.b + fracU*C10.b ),
+                a: Math.round( (1-fracU)*C00.a + fracU*C10.a )  };
+
     let Cu1 = { r: Math.round( (1-fracU)*C01.r + fracU*C11.r ),
                 g: Math.round( (1-fracU)*C01.g + fracU*C11.g ),
-                b: Math.round( (1-fracU)*C01.b + fracU*C11.b )  };
+                b: Math.round( (1-fracU)*C01.b + fracU*C11.b ),
+                a: Math.round( (1-fracU)*C01.a + fracU*C11.a )  };
+
     let Cuv = { r: Math.round( (1-fracV)*Cu0.r + fracV*Cu1.r ),
                 g: Math.round( (1-fracV)*Cu0.g + fracV*Cu1.g ),
-                b: Math.round( (1-fracV)*Cu0.b + fracV*Cu1.b )  };
+                b: Math.round( (1-fracV)*Cu0.b + fracV*Cu1.b ),
+                a: Math.round( (1-fracV)*Cu0.a + fracV*Cu1.a )  };
 
     return Cuv;    
 }
 
-function convertRGBtoHexString( RGB )
+function convertRGBAtoHexString( RGBA )
 {
-    return "#" + RGB.r.toString(16).padStart(2, "0")
-               + RGB.g.toString(16).padStart(2, "0")
-               + RGB.b.toString(16).padStart(2, "0");
+    return "#" + RGBA.r.toString(16).padStart(2, "0")
+               + RGBA.g.toString(16).padStart(2, "0")
+               + RGBA.b.toString(16).padStart(2, "0")
+               + RGBA.a.toString(16).padStart(2, "0");
 }
 
 // TODO: simplify by just one function with optional color image
@@ -788,8 +808,9 @@ function graphHoistPoints( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5
     }
 }
 
-function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
+function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoistRadius=0.5, repeatCount=3 )
 {
+
     for (let uIndex = 0; uIndex < uPointNum; uIndex++)
     {
         let u = uIndex / (uPointNum - 1);
@@ -801,12 +822,12 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
             {
                 let v = vIndex / (vPointNum - 1);
 
-                let position = paramFunc.getHoistPosition( u, v, hoistRadius ); // this takes lots of time!
+                let position = paramFunc.getHoistPosition( u, v, hoistRadius );
 
-                // let rgb = samplePixelDataRGB_Nearest( imageData, u, v, 3 );
-                let rgb = samplePixelDataRGB_Bilinear( imageData, u, v, 3 );
+                // let rgb = samplePixelDataRGB_Nearest( imageData, u, v, repeatCount );
+                let rgb = samplePixelDataRGBA_Bilinear( imageData, u, v, repeatCount );
                 
-                let hexColor = convertRGBtoHexString( rgb );
+                let hexColor = convertRGBAtoHexString( rgb );
 
                 // let hexColor = "#FF0000"
 
