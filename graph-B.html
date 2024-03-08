@@ -79,8 +79,8 @@
             <option>Trefoil</option>
         </select>
     </div>
-    <div class="border"> Line Color: <input type='text' id="curveColor" class="colorPicker" /> </div>
-    <div class="border"> Line Thickness: <input type="text" id="curveThickness" size="2" value="2"></input> </div>
+    <div class="border"> Curve Color: <input type='text' id="curveColor" class="colorPicker" /> </div>
+    <div class="border"> Curve Thickness: <input type="text" id="curveThickness" size="2" value="2"></input> </div>
 </div>
 
 </fieldset>
@@ -94,14 +94,20 @@
         <div class="border">\( y_{Max} = \) <input type="text" id="yMaxInput" size="5" value="+5"></input></div>        
     </div>
     <div class="row">
-        Show Axis? [ ] Axis Color [ ] Axis Thickness [ ] Show Tick Marks? [ ]
+
+    <div class="border"> Axis Color: <input type='text' id="axisColor" class="colorPicker" /> </div>
+    <div class="border"> Axis Thickness: <input type="text" id="axisThickness" size="2" value="2"></input> </div>
+    <div class="border">
+        Draw Tick Marks? <label for="drawTickMarksCheckbox"></label>
+        <input type="checkbox" id="drawTickMarksCheckbox" class="checkbox" checked="checked">
     </div>
+</div>
 </fieldset>
 
 <fieldset>
     <legend> Text </legend>
     <div class="row">
-        <div class="border">Text: <input type="text" id="textInput" size="40" value="Text Along the Curve"></input></div>
+        <div class="border">Text: <input type="text" id="textInput" size="60" value="Text Along the Curve"></input></div>
         <div class="border"> Times to Repeat Text: <input type="text" id="repeatCount" size="2" value="3"></input> </div>
 
     </div>
@@ -155,7 +161,7 @@
 <hr>
 <canvas id="textCanvas"></canvas>
 <hr>
-<canvas id="curveCanvas" width="600" height="600"></canvas>
+<canvas id="curveCanvas" width="1024" height="1024"></canvas>
 </center>
 
 <script>
@@ -187,6 +193,8 @@ $( "#drawTextAlongCurveButton" ).on( "click", drawTextAlongCurve );
 $( "#drawTextButton" ).on( "click", drawText ); // render text into textCanvas
 
 // set initial colors
+$( "#curveColor" ).spectrum('set', "#000000");
+$( "#axisColor" ).spectrum('set', "#888888");
 $( "#fontColor" ).spectrum('set', "#FFFFFF");
 $( "#borderColor" ).spectrum('set', "#000088");
 $( "#textBackgroundColor" ).spectrum('set', "#DDEEFF");
@@ -300,41 +308,40 @@ function clearCanvas()
 
 function drawAxes()
 {
-    let axisColor;
-    let axisThickness;
+    let axisColor = $("#axisColor").spectrum('get').toHexString();
+    let axisThickness = Number( $("#axisThickness").val() );
+    textContext.fillStyle = axisColor;
+    textContext.strokeStyle = axisColor;
+    textContext.lineWidth = axisThickness;
+
+    // TODO: same function? returns value even if not used
     updateAxisData();
     let axis = getAxisData();
+
     // x-axis
-    graphSegment( {x:axis.xMin, y:0}, {x:axis.xMax, y:0} );
+    graphSegment( {x:axis.xMin, y:0}, {x:axis.xMax, y:0}, axisColor, axisThickness );
     // arrowHead length
     let s = 0.02;
     // arrowHead
-    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:+s*axis.yRange});
-    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:-s*axis.yRange});
+    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:+s*axis.yRange}, 1, axisColor, axisThickness);
+    graphVector( {x:axis.xMax, y:0}, {x:-s*axis.xRange, y:-s*axis.yRange}, 1, axisColor, axisThickness);
     // y-axis
-    graphSegment( {x:0, y:axis.yMin}, {x:0, y:axis.yMax} );
+    graphSegment( {x:0, y:axis.yMin}, {x:0, y:axis.yMax}, axisColor, axisThickness );
     // arrowHead
-    graphVector( {x:0, y:axis.yMax}, {x:+s*axis.xRange, y:-s*axis.yRange});
-    graphVector( {x:0, y:axis.yMax}, {x:-s*axis.xRange, y:-s*axis.yRange});
+    graphVector( {x:0, y:axis.yMax}, {x:+s*axis.xRange, y:-s*axis.yRange}, 1, axisColor, axisThickness);
+    graphVector( {x:0, y:axis.yMax}, {x:-s*axis.xRange, y:-s*axis.yRange}, 1, axisColor, axisThickness);
 
     // draw tick marks?
-    let drawTheTickMarks = true;
-    if (drawTheTickMarks)
-        drawTickMarks();
-}
-
-// depends on size, etc.
-function drawTickMarks()
-{
-    let axisColor;
-    let axisThickness;
-    updateAxisData();
-    let axis = getAxisData();
-    for (let x = Math.floor(axis.xMin); x <= Math.ceil(axis.xMax); x++)
-        graphPoint( {x:x, y:0}, "#FF0000", 5);
-    // y-axis
-    for (let y = Math.floor(axis.yMin); y <= Math.ceil(axis.yMax); y++)
-        graphPoint( {x:0, y:y}, "#FF0000", 5);
+    let drawTickMarksChecked = $("#drawTickMarksCheckbox").is(":checked");
+    if (drawTickMarksChecked)
+    {
+        // along x-axis
+        for (let x = Math.floor(axis.xMin); x <= Math.ceil(axis.xMax); x++)
+            graphSegment( {x:x, y:-s*axis.yRange/2}, {x:x, y:+s*axis.yRange/2}, axisColor, axisThickness);
+        // along y-axis
+        for (let y = Math.floor(axis.yMin); y <= Math.ceil(axis.yMax); y++)
+            graphSegment( {x:-s*axis.xRange/2, y:y}, {x:+s*axis.xRange/2, y:y}, axisColor, axisThickness);
+    }
 }
 
 function drawCurve()
