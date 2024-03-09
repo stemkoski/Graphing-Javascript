@@ -20,3 +20,10 @@ TODO: investigate speeding up hoist calculation - replace getVertexAtPercentArcl
 graph-9.html: code cleanup
 
 graph-A.html: add jQueryUI
+
+graph-B.html: feature complete
+
+graph-C.html: switch to tab-based interface
+
+graph-D.html: add save/load data functionality
+
