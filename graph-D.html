@@ -1,6 +1,8 @@
 <html>
     <head>
-    <title>Mathematical Calligrams</title>
+    <title>Mathematical Calligram Generator</title>
+
+    <!-- use for parsing math expressions written as strings -->
     <script src="math.min.js"></script>
     
     <link rel="stylesheet" href="js/jquery-ui.min.css">
@@ -12,6 +14,9 @@
     <!-- include Spectrum colorpicker -->
     <link rel="stylesheet" href="js/spectrum.css">
 	<script src="js/spectrum.js"></script>
+
+    <!-- use to store exif data in jpeg images -->
+    <script src="js/piexif.js"></script>
 
     <style>
     *
@@ -62,13 +67,14 @@
     </head>
 <body>
 
-<div style="font-family: 'Brush Script MT'; font-size: 36px; text-align: center;">Mathematical Calligrams</div>
+<div style="font-family: 'Brush Script MT'; font-size: 36px; text-align: center;">Mathematical Calligram Generator</div>
 
 <div id="tabs">
     <ul>
       <li><a href="#tabs-1">Axis</a></li>
       <li><a href="#tabs-2">Curve</a></li>
       <li><a href="#tabs-3">Text</a></li>
+      <li><a href="#tabs-4">About</a></li>
     </ul>
 
 <div id="tabs-1">
@@ -135,7 +141,7 @@
             <label for="fontSelect">Font: &nbsp;</label>
             <select id="fontSelect" class="selectMenu">
                 <option>Arial</option>
-                <option>Verdana</option>
+                <option selected>Verdana</option>
                 <option>Tahoma</option>
                 <option>Trebuchet MS</option>
                 <option>Times New Roman</option>
@@ -189,22 +195,34 @@
 
 </div>
 
+<div id="tabs-4">
+<p>A <i>calligram</i> is a set of words drawn in a way to create a thematically related image. This application was designed to draw and style text along a path or curve
+specified mathematically. This can be used to create mathematical calligrams (for example, by drawing a description of or equation of a curve along the curve itself),
+or other visually interesting patterns. </p>
+
+<p>There are separate buttons for clearing the canvas and drawing on the canvas, so that multiple curves or text drawings can be combined in one image, if desired.</p>
+
+<p>Any image can be loaded to be used as a canvas background. If an image previously created and saved with this application is loaded, it will also restore all settings in use at the time of saving.</p>
+</div>
+
 </div>
 
 <center>
 <hr>
-<button id="clearDrawAreaButton">Clear Draw Area</button> &nbsp;&nbsp;&nbsp;&nbsp;
-<button id="drawAxesButton">Draw Axes</button> &nbsp;&nbsp;&nbsp;&nbsp;
-<button id="drawCurveButton">Draw Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
-<button id="drawTextAlongCurveButton">Draw Text Along Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
-<button id="saveImageButton">Save Image</button>
+<button id="clearDrawAreaButton">Clear Draw Area</button> &nbsp;&nbsp;
+<button id="drawAxesButton">Draw Axes</button> &nbsp;&nbsp;
+<button id="drawCurveButton">Draw Curve</button> &nbsp;&nbsp;
+<button id="drawTextAlongCurveButton">Draw Text Along Curve</button> &nbsp;&nbsp;
+<button id="undoLastDrawButton">Undo Last Draw</button> &nbsp;&nbsp;
+<button id="saveImageButton">Save Image</button> &nbsp;&nbsp;
+<button id="loadImageButton">Load Image</button>
 <hr>
 <img id="rainbowGradientImage" src="rainbow.jpg" hidden />
 <canvas id="textCanvas"></canvas>
 <hr>
 <canvas id="curveCanvas" width="1024" height="1024"></canvas>
-
 </center>
+<input type="file" id="loadImageInput" style="display:none;" />
 
 <script>
 
@@ -241,7 +259,10 @@ $( "#clearDrawAreaButton" ).on( "click", clearCanvas );
 $( "#drawAxesButton" ).on( "click", drawAxes );
 $( "#drawCurveButton" ).on( "click", drawCurve );
 $( "#drawTextAlongCurveButton" ).on( "click", drawTextAlongCurve );
+$( "#undoLastDrawButton" ).on( "click", undoLastDraw );
 $( "#saveImageButton" ).on( "click", saveImage );
+$( "#loadImageButton" ).on( "click", function() { $("#loadImageInput").click() } );
+$( "#loadImageInput" ).on( "change", loadImage );
 
 // set initial colors
 $( "#curveColor" ).spectrum('set', "#000000");
@@ -470,6 +491,12 @@ function drawTextAlongCurve()
     let repeatCount = Number( $("#repeatCount").val() );
     
     graphHoistImage( F, imageData, xResolution, yResolution, imageHeightOnCurve, repeatCount );
+}
+
+// TODO
+function undoLastDraw()
+{
+    
 }
 
 // used by preset functions
@@ -884,22 +911,6 @@ function convertRGBAtoHexString( RGBA )
                + RGBA.a.toString(16).padStart(2, "0");
 }
 
-// TODO: simplify by just one function with optional color image
-
-function graphHoistPointsIsNeverUsed( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
-{
-    for (let uIndex = 0; uIndex < uPointNum; uIndex++)
-    {
-        let uPercent = uIndex / (uPointNum - 1);
-        for (let vIndex = 0; vIndex < vPointNum; vIndex++)
-        {
-            let vPercent = vIndex / (vPointNum - 1);
-            let position = paramFunc.getHoistPosition( uPercent, vPercent, hoistRadius );
-            graphPoint( position, "#FF0000", 4 );
-        }
-    }
-}
-
 function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoistRadius=0.5, repeatCount=3 )
 {
 
@@ -930,14 +941,98 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
 
 }
 
+// TODO
+const dataFieldNameArray = 
+[
+    "xMinInput", "xMaxInput", "yMinInput", "yMaxInput",
+    "xFuncInput", "yFuncInput", "tMinInput", "tMaxInput" 
+];
+
+// TODO: different types of data (hex, boolean)
+const hexDataFieldNameArray = []
+const checkDataFieldNameArray = []
+
+// ultra TODO: merge into an object list: dataName:dataType = "string"|"hexcolor"|"boolean"
+
 function saveImage()
 {
-    let image = canvas.toDataURL("image/png");
-    let element = document.createElement("a");
-    element.setAttribute("href", image);
-    element.setAttribute("download", "calligram.png");
-    element.click();
-    element.remove();
+    let jpegDataAsURL = canvas.toDataURL("image/jpeg", 1.00);
+
+    var customDataObject = {};
+
+    for (let i = 0; i < dataFieldNameArray.length; i++)
+    {
+        let dataFieldName = dataFieldNameArray[i];
+        customDataObject[dataFieldName] = $("#" + dataFieldName).val();
+    };
+
+    var customDataString = JSON.stringify( customDataObject );
+
+    var exifObject = {};
+    exifObject[piexif.TagValues.ExifIFD.UserComment] = customDataString;
+
+    exifDictionary = { "Exif": exifObject  };
+    exifData = piexif.dump(exifDictionary);
+
+    let jpegDataAsURL2 = piexif.insert(exifData, jpegDataAsURL)
+
+    var link = document.createElement("a");
+    link.download = "mathtext.jpg";
+    link.href = jpegDataAsURL2;
+    link.click();
+    delete link; 
+}
+
+function loadImage(event)
+{
+    // check if no data entered or user cancelled    
+    if (event.target.value == null || event.target.value == "")
+        return;
+
+    var file = event.target.files[0];
+
+    // display image on canvas
+    let imgSrc = window.URL.createObjectURL(file);
+    let img = new Image();
+    img.onload = function() { context.drawImage(img, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange); }
+    img.src = imgSrc;
+
+
+    var fileReader = new FileReader();
+    fileReader.onload = function(event) 
+    {
+        // reset the input to blank
+        //   in case user loads same file again, so that change event triggers
+        $("#loadImageInput").val("");
+
+        // get exif data
+        var fileData = event.target.result;
+
+        var exifData = piexif.load( fileData );
+        console.log(exifData)
+        if ( exifData == null || exifData == {} )
+            return;
+
+        var exifData2 = exifData["Exif"];
+        if ( exifData2 == null || exifData2 == {} )
+            return;
+
+        var customDataString = exifData2[piexif.TagValues.ExifIFD.UserComment];
+        // if parse throws an exception (if custom data is not a valid JSON string), then an error is thrown
+        var customDataObject = JSON.parse(customDataString);
+
+        // restore field data
+        for (let i = 0; i < dataFieldNameArray.length; i++)
+        {
+            let dataFieldName = dataFieldNameArray[i];
+            $("#" + dataFieldName).val( customDataObject[dataFieldName] );
+        };
+
+        // console.log(customDataString);
+        // console.log(customDataObject);
+
+    };
+    fileReader.readAsDataURL(file);
 }
 
 </script>
