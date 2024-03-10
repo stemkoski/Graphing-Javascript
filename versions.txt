@@ -25,5 +25,5 @@ graph-B.html: feature complete
 
 graph-C.html: switch to tab-based interface
 
-graph-D.html: add save/load data functionality
+graph-D.html: add undo feature and save/load data functionality
 

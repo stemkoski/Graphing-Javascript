@@ -1,0 +1,949 @@
+<html>
+    <head>
+    <title>Mathematical Calligrams</title>
+    <script src="math.min.js"></script>
+    
+    <link rel="stylesheet" href="js/jquery-ui.min.css">
+	<script src="js/external/jquery/jquery.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- include Spectrum colorpicker -->
+    <link rel="stylesheet" href="js/spectrum.css">
+	<script src="js/spectrum.js"></script>
+
+    <style>
+    *
+    {
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+    
+    input
+    {
+        text-align: left;
+        font-family: monospace !important;
+        font-weight: bold;
+    }
+
+    fieldset
+    {
+        font-weight: bold;
+        border: 1px dashed black;
+        padding: 0px 0px 0px 10px;
+    }
+
+    .row
+    {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        flex-grow: 1;
+    }
+
+    /* TODO: nowrap, padded */
+    .border
+    {
+        border: 0px solid red;
+        white-space: nowrap;
+        margin: 10px 40px 10px 0px;
+        flex: 0;
+    }
+
+    .copypaste
+    {
+        font-size: 120%;
+        border: 1px solid black;
+        padding: 0px 3px 2px 3px;
+        cursor: hand;
+    }
+    </style>
+
+    </head>
+<body>
+
+<div style="font-family: 'Brush Script MT'; font-size: 36px; text-align: center;">Mathematical Calligrams</div>
+
+<div id="tabs">
+    <ul>
+      <li><a href="#tabs-1">Axis</a></li>
+      <li><a href="#tabs-2">Curve</a></li>
+      <li><a href="#tabs-3">Text</a></li>
+    </ul>
+
+<div id="tabs-1">
+    <div class="row">
+        <div class="border">\( x_{Min} = \) <input type="text" id="xMinInput" size="5" value="-5"></input></div>
+        <div class="border">\( x_{Max} = \) <input type="text" id="xMaxInput" size="5" value="+5"></input></div>
+        <div class="border">\( y_{Min} = \) <input type="text" id="yMinInput" size="5" value="-5"></input></div>
+        <div class="border">\( y_{Max} = \) <input type="text" id="yMaxInput" size="5" value="+5"></input></div>        
+    </div>
+    <div class="row">
+        <div class="border"> Draw Area Background Color: <input type='text' id="areaBackgroundColor" class="colorPicker" /> </div>
+        <div class="border"> Axis Color: <input type='text' id="axisColor" class="colorPicker" /> </div>
+        <div class="border"> Axis Thickness: <input type="text" id="axisThickness" size="2" value="2"></input> </div>
+        <div class="border">
+            Draw Tick Marks? <label for="drawTickMarksCheckbox"></label>
+            <input type="checkbox" id="drawTickMarksCheckbox" class="checkbox" checked="checked">
+        </div>
+    </div>
+</div>
+    
+<div id="tabs-2">
+    <div class="row">
+        <div class="border">\( x(t) = \) <input type="text" id="xFuncInput" size="20" value="t"></input></div>
+        <div class="border">\( y(t) = \) <input type="text" id="yFuncInput" size="20" value="(1/2)t^2 - 3"></input></div>
+        <div class="border">\( t_{Min} = \) <input type="text" id="tMinInput" size="5" value="-3.5"></input></div>
+        <div class="border">\( t_{Max} = \) <input type="text" id="tMaxInput" size="5" value="3.5"></input></div>
+    </div>
+    <div class="row">
+        <div class="border">
+            <label for="curveSelect">Preset Functions: &nbsp;</label>
+            <select id="curveSelect" class="selectMenu">
+                <option>Parabola</option>
+                <option>Circle</option>
+                <option>Sine</option>
+                <option>Spiral</option>
+                <option>Figure Eight</option>
+                <option>Infinity</option>
+                <option>Lissajous</option>
+                <option>Flower</option>
+                <option>Asterisk</option>
+                <option>Exponential</option>
+                <option>Logistic</option>
+                <option>Astroid</option>
+                <option>Trefoil 1</option>
+                <option>Trefoil 2</option>
+                <option>Heart</option>
+                
+            </select>
+        </div>
+        <div class="border"> Curve Color: <input type='text' id="curveColor" class="colorPicker" /> </div>
+        <div class="border"> Curve Thickness: <input type="text" id="curveThickness" size="2" value="2"></input> </div>
+    </div>
+</div>
+
+<div id="tabs-3">
+    <div class="row">
+        <div class="border">Text: <input type="text" id="textInput" size="40" value=" Text Along the Curve "></input></div>
+        <div class="border">Symbols:
+            <span class="copypaste">←</span><span class="copypaste">↑</span><span class="copypaste">→</span><span class="copypaste">↓</span><span class="copypaste">•</span><span class="copypaste">⬤</span><span class="copypaste">◼</span><span class="copypaste">◆</span><span class="copypaste">▲</span><span class="copypaste">★</span><span class="copypaste">♥</span><span class="copypaste">⁕</span><span class="copypaste">♪</span><span class="copypaste">♫</span><span class="copypaste">♩</span><span class="copypaste">☻</span><span class="copypaste">¹</span><span class="copypaste">²</span><span class="copypaste">³</span><span class="copypaste">⋯</span><span class="copypaste">∞</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="border">
+            <label for="fontSelect">Font: &nbsp;</label>
+            <select id="fontSelect" class="selectMenu">
+                <option>Arial</option>
+                <option>Verdana</option>
+                <option>Tahoma</option>
+                <option>Trebuchet MS</option>
+                <option>Times New Roman</option>
+                <option>Georgia</option>
+                <option>Garamond</option>
+                <option>Courier New</option>
+                <option>Brush Script MT</option>
+                <option>Segoe Script</option>
+            </select>
+        </div>
+        <div class="border">
+            Font Bold? <label for="fontBoldCheckbox"></label>
+            <input type="checkbox" id="fontBoldCheckbox" class="checkbox" checked="checked">
+        </div>
+        <div class="border"> Font Color: <input type='text' id="fontColor" class="colorPicker" /> </div>
+        <div class="border"> Font Height on Curve: <input type="text" id="fontHeightOnCurve" size="3" value="0.5"></input> </div>
+    </div>
+    <div class="row">
+        <div class="border">
+            Draw Border? <label for="drawBorderCheckbox"></label>
+            <input type="checkbox" id="drawBorderCheckbox" class="checkbox" checked="checked">
+        </div>
+        <div class="border"> Border Color: <input type='text' id="borderColor" class="colorPicker" /> </div>
+        <div class="border"> Border Thickness: <input type="text" id="borderThickness" size="2" value="5"></input> </div>
+    </div>
+    <div class="row">
+        <!-- Background Style: Solid Color, Rainbow Gradient (Horiz.), Rainbow Gradient (Vert.), Background Color (if Solid) [ ] -->
+        <div class="border">
+            <label for="backgroundStyleSelect">Text Background Style: &nbsp;</label>
+            <select id="backgroundStyleSelect" class="selectMenu">
+                <option>Solid Color</option>
+                <option>Rainbow (Horizontal)</option>
+                <option>Rainbow (Vertical)</option>
+                <option>None</option>
+            </select>
+        </div>
+        <div class="border"> Text Background Color: <input type='text' id="textBackgroundColor" class="colorPicker" /> </div>
+    </div>
+    <div class="row">
+        <div class="border">
+            Lines above/below text? <label for="linesAboveBelowCheckbox"></label>
+            <input type="checkbox" id="linesAboveBelowCheckbox" class="checkbox">
+        </div>
+        <div class="border"> Line Color: <input type='text' id="linesAboveBelowColor" class="colorPicker" /> </div>
+        <div class="border"> Line Thickness: <input type="text" id="linesAboveBelowThickness" size="2" value="1"></input> </div>
+    </div>
+    <div class="row">
+        <div class="border"> Times to Repeat Text: <input type="text" id="repeatCount" size="2" value="3"></input> </div>
+        <div class="border"> Text Sampling Resolution: &nbsp; <i>x</i> <input type="text" id="xResolution" size="5" value="4000"></input> &nbsp; <i>y</i> <input type="text" id="yResolution" size="5" value="80"></input></div>
+    </div>
+
+</div>
+
+</div>
+
+<center>
+<hr>
+<button id="clearDrawAreaButton">Clear Draw Area</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawAxesButton">Draw Axes</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawCurveButton">Draw Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="drawTextAlongCurveButton">Draw Text Along Curve</button> &nbsp;&nbsp;&nbsp;&nbsp;
+<button id="saveImageButton">Save Image</button>
+<hr>
+<img id="rainbowGradientImage" src="rainbow.jpg" hidden />
+<canvas id="textCanvas"></canvas>
+<hr>
+<canvas id="curveCanvas" width="1024" height="1024"></canvas>
+
+</center>
+
+<script>
+
+// global objects
+
+var canvas = document.getElementById("curveCanvas");
+var context = canvas.getContext("2d");
+var textCanvas = document.getElementById("textCanvas");
+var textContext = textCanvas.getContext("2d");
+
+var rainbowGradientImage = document.getElementById("rainbowGradientImage");
+
+var axisData;
+
+// display canvas at half scale, but resolution is still 1024x024
+canvas.style.transform = "translateY(-256px) scale(0.5)";
+textCanvas.style.transform = "scale(0.5)";
+
+// Initialize jQueryUI components and interactivity ----------------
+
+let allInputElements = $( "input" );
+allInputElements.addClass( "ui-corner-all" );
+allInputElements.css( {padding: 6} );
+
+// apply format function to corresponding UI elements
+$( "button" ).button();
+$( ".selectMenu" ).selectmenu( {width: 200} );
+$( ".checkbox" ).checkboxradio().css( {padding: 12} );;
+$( ".colorPicker" ).spectrum( {color: "#000000"} );
+$( "#tabs" ).tabs( {collapsible: true, active: 1} );
+
+// assign functions to buttons
+$( "#clearDrawAreaButton" ).on( "click", clearCanvas );
+$( "#drawAxesButton" ).on( "click", drawAxes );
+$( "#drawCurveButton" ).on( "click", drawCurve );
+$( "#drawTextAlongCurveButton" ).on( "click", drawTextAlongCurve );
+$( "#saveImageButton" ).on( "click", saveImage );
+
+// set initial colors
+$( "#curveColor" ).spectrum('set', "#000000");
+$( "#axisColor" ).spectrum('set', "#888888");
+$( "#areaBackgroundColor" ).spectrum('set', "#EEEEEE");
+$( "#fontColor" ).spectrum('set', "#FFFFFF");
+$( "#borderColor" ).spectrum('set', "#000088");
+$( "#textBackgroundColor" ).spectrum('set', "#DDEEFF");
+$( "#linesAboveBelowColor" ).spectrum('set', "#444444");
+
+// activate drawText when anything changes
+$( "#textInput" ).on( "input", drawText );
+$( "#fontSelect" ).on( "selectmenuchange", drawText );
+$( "#fontColor" ).on( "change", drawText );
+$( "#fontBoldCheckbox" ).on( "change", drawText );
+$( "#drawBorderCheckbox" ).on( "change", drawText );
+$( "#borderColor" ).on( "change", drawText );
+$( "#borderThickness" ).on( "input", drawText );
+$( "#backgroundStyleSelect" ).on( "selectmenuchange", drawText );
+$( "#textBackgroundColor" ).on( "change", drawText );
+$( "#linesAboveBelowCheckbox" ).on( "change", drawText );
+$( "#linesAboveBelowColor" ).on( "change", drawText );
+$( "#linesAboveBelowThickness" ).on( "input", drawText );
+
+// copypaste symbol functionality
+$( ".copypaste" ).on( "click", function(event) { copypaste(event.target.innerText) } );
+
+function copypaste(symbol)
+{
+    // current position of the cursor
+    let cursorPos = document.getElementById("textInput").selectionStart; 
+    let currentText = $('#textInput').val();
+    $('#textInput').val(currentText.slice(0, cursorPos) + symbol + currentText.slice(cursorPos));
+    document.getElementById("textInput").selectionStart = cursorPos + 1;
+    drawText();
+    // document.getElementById("textInput").focus();
+    // document.getElementById("textInput").select();
+}
+
+// immediate tasks
+updateAxisData();
+clearCanvas();
+drawText();
+
+function drawText()
+{
+    let textString = $("#textInput").val();
+    let backgroundColor = $("#textBackgroundColor").spectrum('get').toHexString();
+    let fontColor = $("#fontColor").spectrum('get').toHexString();
+    let borderColor = $("#borderColor").spectrum('get').toHexString();
+    let fontName = $( "#fontSelect" ).val();
+    let fontStyle = "64px " + fontName;
+    let fontBoldChecked = $("#fontBoldCheckbox").is(":checked");
+    if (fontBoldChecked)
+        fontStyle = "bold " + fontStyle;
+    let drawBorderChecked = $("#drawBorderCheckbox").is(":checked");
+    let borderThickness = Number( $("#borderThickness").val() );
+    let linesAboveBelowChecked = $("#linesAboveBelowCheckbox").is(":checked");
+    let linesAboveBelowColor = $("#linesAboveBelowColor").spectrum('get').toHexString();
+    let linesAboveBelowThickness = Number( $("#linesAboveBelowThickness").val() );
+    let canvasPadding = 2;
+
+    // context properties that affect dimensions of rendered text
+    textContext.font = fontStyle;
+    textContext.lineWidth = borderThickness;
+    textContext.lineJoin = "round";
+    textContext.fontKerning = "none";
+    textContext.letterSpacing = "1px";
+
+    let textMetrics = textContext.measureText(textString);
+    // console.log( textMetrics );
+    let width = textMetrics.width;
+    let height = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+    textCanvas.width = width + borderThickness/2 + 2*canvasPadding; 
+    textCanvas.height = height + borderThickness + 2*canvasPadding + (linesAboveBelowChecked ? linesAboveBelowThickness * 4 : 0);
+
+    // clear text canvas
+    let backgroundStyle = $("#backgroundStyleSelect").val();
+
+    if (backgroundStyle == "Solid Color")
+    {
+        textContext.fillStyle = backgroundColor;
+        textContext.fillRect(0,0, textCanvas.width, textCanvas.height);
+    }
+    else if (backgroundStyle == "Rainbow (Horizontal)")
+    {
+        textContext.drawImage(rainbowGradientImage, 0,0, textCanvas.width, textCanvas.height);
+    }
+    else if (backgroundStyle == "Rainbow (Vertical)")
+    {
+        textContext.rotate(Math.PI / 2);
+        textContext.drawImage(rainbowGradientImage, 0, -textCanvas.width, textCanvas.height, textCanvas.width);
+        textContext.rotate(-Math.PI / 2);
+    }
+    else if (backgroundStyle == "None")
+    {
+        textContext.clearRect(0,0, textCanvas.width, textCanvas.height);
+    }
+    // after resizing canvas, all context properties are reset, so we change them again
+    textContext.font = fontStyle;
+    textContext.fillStyle = fontColor;
+    textContext.strokeStyle = borderColor;
+    textContext.lineWidth = borderThickness;
+    textContext.lineJoin = "round";
+    textContext.fontKerning = "none";
+    textContext.letterSpacing = "1px";
+
+    let top = textMetrics.actualBoundingBoxAscent + borderThickness/2 + canvasPadding + (linesAboveBelowChecked ? linesAboveBelowThickness * 2 : 0);
+    let left = borderThickness/2 + canvasPadding/2;
+
+    if (linesAboveBelowChecked)
+    {
+        textContext.fillStyle = linesAboveBelowColor;
+        textContext.fillRect(0, 0, textCanvas.width, linesAboveBelowThickness);
+        textContext.fillRect(0, textCanvas.height - linesAboveBelowThickness - 1, textCanvas.width, linesAboveBelowThickness + 1);
+        textContext.fillStyle = fontColor;
+    }
+
+    if (drawBorderChecked)
+    {
+        textContext.strokeText( textString, left, top );
+    }
+
+    textContext.fillText( textString, left, top );
+}
+
+// updates canvas and sets value of global variable
+function updateAxisData()
+{
+    let xMin = Number( $("#xMinInput").val() );
+    let xMax = Number( $("#xMaxInput").val() );
+    let yMin = Number( $("#yMinInput").val() );
+    let yMax = Number( $("#yMaxInput").val() );
+    let xRange = xMax - xMin;
+    let yRange = yMax - yMin;
+    
+    axisData = { xMin, xMax, yMin, yMax, xRange, yRange };
+
+    context.setTransform( 
+        canvas.width/axisData.xRange, 0,
+        0, -canvas.height/axisData.yRange,
+        -canvas.width/axisData.xRange * axisData.xMin, 
+        +canvas.height/axisData.yRange * axisData.yMax );
+}
+
+function clearCanvas()
+{
+    updateAxisData();
+    let areaBackgroundColor = $("#areaBackgroundColor").spectrum('get').toHexString(); 
+    context.fillStyle = areaBackgroundColor;
+    // large enough to cover any preset area in case of axis change
+    context.fillRect(-2000, -2000, 4000, 4000);
+}
+
+function drawAxes()
+{
+    updateAxisData();
+
+    let axisColor = $("#axisColor").spectrum('get').toHexString();
+    let axisThickness = Number( $("#axisThickness").val() );
+    textContext.fillStyle = axisColor;
+    textContext.strokeStyle = axisColor;
+    textContext.lineWidth = axisThickness;
+
+    // x-axis
+    graphSegment( {x:axisData.xMin, y:0}, {x:axisData.xMax, y:0}, axisColor, axisThickness );
+    // arrowHead length
+    let s = 0.02;
+    // arrowHead
+    graphVector( {x:axisData.xMax, y:0}, {x:-s*axisData.xRange, y:+s*axisData.yRange}, 1, axisColor, axisThickness);
+    graphVector( {x:axisData.xMax, y:0}, {x:-s*axisData.xRange, y:-s*axisData.yRange}, 1, axisColor, axisThickness);
+    // y-axis
+    graphSegment( {x:0, y:axisData.yMin}, {x:0, y:axisData.yMax}, axisColor, axisThickness );
+    // arrowHead
+    graphVector( {x:0, y:axisData.yMax}, {x:+s*axisData.xRange, y:-s*axisData.yRange}, 1, axisColor, axisThickness);
+    graphVector( {x:0, y:axisData.yMax}, {x:-s*axisData.xRange, y:-s*axisData.yRange}, 1, axisColor, axisThickness);
+
+    // draw tick marks?
+    let drawTickMarksChecked = $("#drawTickMarksCheckbox").is(":checked");
+    if (drawTickMarksChecked)
+    {
+        // along x-axis
+        for (let x = Math.floor(axisData.xMin); x <= Math.ceil(axisData.xMax); x++)
+            graphSegment( {x:x, y:-s*axisData.yRange/2}, {x:x, y:+s*axisData.yRange/2}, axisColor, axisThickness);
+        // along y-axis
+        for (let y = Math.floor(axisData.yMin); y <= Math.ceil(axisData.yMax); y++)
+            graphSegment( {x:-s*axisData.xRange/2, y:y}, {x:+s*axisData.xRange/2, y:y}, axisColor, axisThickness);
+    }
+}
+
+function drawCurve()
+{
+    updateAxisData();
+
+    let xFuncString = $("#xFuncInput").val();
+    let yFuncString = $("#yFuncInput").val();
+    let tMin = Number( $("#tMinInput").val() );
+    let tMax = Number( $("#tMaxInput").val() );
+
+    let F = new ParametricFunction( xFuncString, yFuncString, tMin, tMax, true );
+    let samplePoints = Number( $("#xResolution").val() );
+    let vertexArray = F.getVertexArray(samplePoints);
+
+    let curveColor = $("#curveColor").spectrum('get').toHexString();
+    let curveThickness = Number( $("#curveThickness").val() );
+
+    graphVertexArraySegments( vertexArray, curveColor, curveThickness );
+}
+
+function drawTextAlongCurve()
+{
+    updateAxisData();
+
+    let xFuncString = $("#xFuncInput").val();
+    let yFuncString = $("#yFuncInput").val();
+    let tMin = Number( $("#tMinInput").val() );
+    let tMax = Number( $("#tMaxInput").val() );
+ 
+    let F = new ParametricFunction( xFuncString, yFuncString, tMin, tMax, true );
+
+    let imageData = textContext.getImageData(0,0, textCanvas.width, textCanvas.height+1);
+
+    let xResolution = Number( $("#xResolution").val() );
+    let yResolution = Number( $("#yResolution").val() );
+    let imageHeightOnCurve = Number( $("#fontHeightOnCurve").val() );
+    let repeatCount = Number( $("#repeatCount").val() );
+    
+    graphHoistImage( F, imageData, xResolution, yResolution, imageHeightOnCurve, repeatCount );
+}
+
+// used by preset functions
+function updateInputFields(xFuncStr, yFuncStr, tMin, tMax, xMin=-5, xMax=5, yMin=-5, yMax=5)
+{
+    $("#xFuncInput").val(xFuncStr);
+    $("#yFuncInput").val(yFuncStr);
+    $("#tMinInput").val(tMin);
+    $("#tMaxInput").val(tMax);
+    $("#xMinInput").val(xMin);
+    $("#xMaxInput").val(xMax);
+    $("#yMinInput").val(yMin);
+    $("#yMaxInput").val(yMax);
+}
+
+$( "#curveSelect" ).on( "selectmenuchange",
+   function(event, ui)
+   {       
+        let value =  $( "#curveSelect" ).val();
+        if (value == "Parabola")
+            updateInputFields( "t", "(1/2)t^2 - 3", -3.5, 3.5 );
+        if (value == "Circle")
+            updateInputFields( "4*cos(t)", "4*sin(t)", 0, 6.283 );
+        if (value == "Sine")
+            updateInputFields( "t", "2 * sin(1.5t)", -5, 5 );
+        if (value == "Exponential")
+            updateInputFields( "t", "(1/2)e^(t/2)", -3, 5.8, -3, 7, -1, 9 );
+        if (value == "Logistic")
+            updateInputFields( "t", "4 / (1 + e^(-2t))", -5, 5, -5, 5, -4, 6 );
+        if (value == "Spiral")
+            updateInputFields( "-t*cos(t)/3", "t*sin(t)/3", -15, 0, -5, 5, -4.5, 5.5 );
+        if (value == "Infinity")
+            updateInputFields( "4*cos(t)", "2*sin(2t)", 0, 6.283 );
+        if (value == "Figure Eight")
+            updateInputFields( "2*sin(2t)", "4*cos(t)", 0, 6.283 );
+        if (value == "Lissajous")
+            updateInputFields( "4*cos(3t)", "4*sin(2t)", 0, 6.283 );
+        if (value == "Flower")
+            updateInputFields( "(2 + 2sin(5t))*cos(t)", "(2 + 2sin(5t))*sin(t)", 0, 6.283 );
+        if (value == "Asterisk")
+            updateInputFields( "(2 + cos(6t))*cos(t)", "(2 + cos(6t))*sin(t)", 0, 6.283 );
+        if (value == "Astroid")
+            updateInputFields( "4*cos(t)^(3)", "4*sin(t)^(3)", 0, 6.283 );
+        if (value == "Trefoil 1")
+            updateInputFields( "t^3 - 3t", "t^4 - 4t^2 + 1", -2.1, +2.1 );
+        if (value == "Trefoil 2")
+            updateInputFields( "sin(t) + 2sin(2t)", "-cos(t) + 2cos(2t)", 0, 6.283 );
+        if (value == "Heart")
+            updateInputFields( "3*(sin(t))^3", "5/2*cos(t) - cos(2t) - 1/2*cos(3t) - 1/4*cos(4t)", -3.14, 3.14, -4, 4, -4, 4 );
+
+    }
+);
+
+// var mathUnitsPerPixel = (xMax - xMin) / canvas.width;
+// var pixelsPerMathUnit = 1 / mathUnitsPerPixel;
+
+// generic graphing method
+function graphPoint( point={x:0, y:0}, pointColor="#000000", pointRadiusPixels=4 )
+{
+    context.fillStyle = pointColor;
+
+    let rx = pointRadiusPixels * (axisData.xRange / canvas.width);
+    let ry = pointRadiusPixels * (axisData.yRange / canvas.height);
+
+    // for square points
+    context.fillRect( point.x - rx/2, point.y - ry/2, rx, ry );
+    
+    /*
+    // for round points
+    context.beginPath();
+    context.arc(point.x, point.y, r/2, 0, 2 * Math.PI);
+    context.closePath();
+    context.fill();
+    */
+}
+
+// generic graphing method
+function graphSegment( pointA={x:0, y:0}, pointB={x:1, y:1}, segmentColor="#666666",
+     segmentThicknessPixels=2 )
+{
+    context.strokeStyle = segmentColor;
+
+    let r = segmentThicknessPixels * (axisData.xRange / canvas.width);
+    context.lineWidth = r;
+
+    context.beginPath();
+    context.moveTo(pointA.x, pointA.y);
+    context.lineTo(pointB.x, pointB.y);
+    context.closePath();
+    context.stroke();
+}
+
+// generic graphing method
+function graphVector( basePoint={x:0, y:0}, vector={x:1, y:1}, vectorScale=1, vectorColor, vectorThicknessPixels )
+{
+    let endPoint = {x: basePoint.x + vectorScale * vector.x, y: basePoint.y + vectorScale * vector.y};
+    graphSegment(basePoint, endPoint, vectorColor, vectorThicknessPixels);
+}
+
+function graphVertexArrayPoints( vertexArray, pointColor, pointRadiusPixels )
+{
+    for (let i = 0; i < vertexArray.length; i++)
+        graphPoint( vertexArray[i].position, pointColor, pointRadiusPixels );
+}
+
+function graphVertexArraySegments( vertexArray, segmentColor, segmentThicknessPixels )
+{
+    for (let i = 0; i < vertexArray.length - 1; i++)
+        graphSegment( vertexArray[i].position, vertexArray[i+1].position, segmentColor, segmentThicknessPixels );
+}
+
+function graphVertexArrayTangents( vertexArray, vectorScale, segmentColor, segmentThicknessPixels )
+{
+    for (let i = 0; i < vertexArray.length; i++)
+        graphVector( vertexArray[i].position, vertexArray[i].tangentVector, vectorScale, segmentColor, segmentThicknessPixels );
+}
+
+function graphVertexArrayNormals( vertexArray, vectorScale, segmentColor, segmentThicknessPixels )
+{
+    for (let i = 0; i < vertexArray.length; i++)
+        graphVector( vertexArray[i].position, vertexArray[i].normalVector, vectorScale, segmentColor, segmentThicknessPixels );
+}
+
+function graphVertexArrayEverything( paramFunc, numVerts=100, numFrames=10 )
+{
+    // use lots of sample points to get a smooth curve
+    let vertexArray = paramFunc.getVertexArray( numVerts );
+    
+    // use either of the following two lines of code
+    // let vertexArray2 = paramFunc.getVertexArray( numFrames );
+    let vertexArray2 = paramFunc.getEquispacedVertexArray( numFrames );
+    
+    let scale = 0.5;
+    graphVertexArraySegments(vertexArray, "#FF4444", 1);
+    graphVertexArrayNormals(vertexArray2, scale, "#0000FF", 8);
+    graphVertexArrayTangents(vertexArray2, scale, "#008800", 8);
+    graphVertexArrayPoints(vertexArray2, "#FF0000", 16); 
+}
+
+// generic math methods
+
+function distance( pointA={x:0, y:0}, pointB={x:1, y:1} )
+{
+    let vecAB = { x: pointB.x - pointA.x, y: pointB.y - pointA.y };
+
+    return getVectorLength( vecAB );
+}
+
+function getVectorLength( vec={x:1, y:0} )
+{
+    return Math.sqrt( vec.x * vec.x + vec.y * vec.y );
+}
+
+// returns value but also modifies original object
+function setVectorLength( vec={x:1, y:0}, newLength=1 )
+{
+    let originalLength = getVectorLength(vec);
+    
+    if (originalLength == 0)
+        return vec;
+    
+    vec.x *= (newLength/originalLength);    
+    vec.y *= (newLength/originalLength);    
+
+    return vec;
+}
+
+// uses the math.js library to enable user to enter x(t), y(t) functions as strings
+class ParametricFunction
+{
+    constructor( xFunctionString, yFunctionString, tMin=0, tMax=1, flipNormals=false )
+    {
+        this.xFunctionString = xFunctionString;
+        this.xFunction = math.parse(xFunctionString).compile();
+        this.yFunctionString = yFunctionString;
+        this.yFunction = math.parse(yFunctionString).compile();
+        this.tMin = tMin;
+        this.tMax = tMax;
+        this.flipNormals = flipNormals;
+    }
+
+    getPositionAt( tValue=0 )
+    {
+        return { x: this.xFunction.evaluate( {t: tValue} ), 
+                 y: this.yFunction.evaluate( {t: tValue} ) };
+    }
+
+    getTangentVectorAt( tValue )
+    {
+        const epsilon = 0.00001;
+        let deltaX = ( this.xFunction.evaluate( {t:tValue+epsilon} ) - this.xFunction.evaluate( {t:tValue} ) ) / epsilon;
+        let deltaY = ( this.yFunction.evaluate( {t:tValue+epsilon} ) - this.yFunction.evaluate( {t:tValue} ) ) / epsilon;
+        let tangentVector = { x: deltaX, y: deltaY };
+        setVectorLength( tangentVector, 1 );
+        return tangentVector;
+    }
+
+    // since this is 2D, don't need cross product: use negative reciprocal coordinate of tangent vector 
+    getNormalVectorAt( tValue )
+    {
+        let tangentVector = this.getTangentVectorAt( tValue );
+
+        let normalVector = null;
+        if (this.flipNormals)
+            normalVector = { x: -tangentVector.y, y: tangentVector.x };
+        else
+            normalVector = { x: tangentVector.y, y: -tangentVector.x };
+        
+        return normalVector;
+    }
+
+    getVertexAt( tValue )
+    {
+        return { t: tValue,
+                 position: this.getPositionAt(tValue),
+                 tangentVector: this.getTangentVectorAt(tValue),
+                 normalVector: this.getNormalVectorAt(tValue) }
+    }
+
+    getVertexArray( numVerts=100 )
+    {
+        let vertexArray = [];
+
+        let tDelta = (this.tMax - this.tMin) / (numVerts - 1);
+        for (let vertexIndex = 0; vertexIndex < numVerts; vertexIndex++)
+        {
+            let tValue = this.tMin + vertexIndex * tDelta;
+            let vertex = this.getVertexAt(tValue);
+            // calculate values used for estimating equally spaced vertices along curve
+            if (vertexArray.length == 0)
+            {           
+                vertex.segmentLength = 0;
+                vertex.arcLength = 0;
+            }
+            else
+            {
+                let previousVertex = vertexArray[ vertexArray.length - 1 ];
+                let segmentLength = distance( vertex.position, previousVertex.position );
+                // distance to previous point
+                vertex.segmentLength = segmentLength;
+                // distance along curve from first point to this point
+                vertex.arcLength = previousVertex.arcLength + segmentLength;
+            }
+            vertexArray.push( vertex );
+        }
+
+        let totalArcLength = vertexArray[ vertexArray.length - 1 ].arcLength;
+        for (let vertexIndex = 0; vertexIndex < numVerts; vertexIndex++)
+        {
+            vertexArray[vertexIndex].percentArcLength = vertexArray[vertexIndex].arcLength / totalArcLength;
+        }
+
+        return vertexArray;
+    }
+
+    getTotalArcLength()
+    {
+        // only create this large Internal Vertex Array (iVA) once, when needed (here)
+        if (this.internalVertexArray == null)
+            this.internalVertexArray = this.getVertexArray(1000);
+
+        return this.internalVertexArray[999].arcLength;
+    }
+
+    getVertexAtPercentArcLength( percent )
+    {
+        // out of bounds cases
+        if ( percent <= 0 )
+            return this.getVertexAt(this.tMin);
+        if ( percent >= 1 )
+            return this.getVertexAt(this.tMax);
+
+        // only create this large Internal Vertex Array (iVA) once, when needed (here)
+        if (this.internalVertexArray == null)
+            this.internalVertexArray = this.getVertexArray(1000);
+
+        // determine an index such that:
+        //    vertexArray[index].percentArcLength <= percent < vertexArray[index+1].percentArcLength
+
+        // binary search algorithm
+
+        // index values
+        let minIndex = 0;
+        let midIndex  = 0;
+        let maxIndex = this.internalVertexArray.length - 1;
+
+        while (minIndex <= maxIndex)
+        {
+            midIndex = Math.floor( (minIndex + maxIndex) / 2 );
+    
+            if ( this.internalVertexArray[midIndex].percentArcLength <= percent
+            && percent < this.internalVertexArray[midIndex+1].percentArcLength )
+            {
+                break; // midIndex now contains the desired index 
+            }
+            else if (percent < this.internalVertexArray[midIndex].percentArcLength)
+            {
+                maxIndex = midIndex - 1; // continue checking the lower array half 
+            }
+            else
+            {
+                minIndex = midIndex + 1; // continue checking the upper array half
+            }
+        }
+
+        // interpolate the parameter value corresponding to percentArcLength = percent
+        let tA = this.internalVertexArray[midIndex].t;
+        let tB = this.internalVertexArray[midIndex+1].t; 
+        let pArcLengthA = this.internalVertexArray[midIndex].percentArcLength;
+        let pArcLengthB = this.internalVertexArray[midIndex+1].percentArcLength;
+
+        let ratio = (percent - pArcLengthA) / (pArcLengthB - pArcLengthA);
+        let t = tA + (tB - tA) * ratio;
+
+        return this.getVertexAt(t);
+    }
+
+    // equally spaced in terms of arc length between points
+    getEquispacedVertexArray( numVerts=100 )
+    {
+        let vertexArray = [];
+        for (let vertexIndex = 0; vertexIndex < numVerts; vertexIndex++)
+        {
+            let percent = vertexIndex / (numVerts - 1);
+            let vertex = this.getVertexAtPercentArcLength( percent );
+            vertexArray.push( vertex );
+        }
+        return vertexArray;
+    }
+
+    // hoisting a rectangular region along curve
+    // domain: [0,1] x [0,1]
+    // u = percent distance along curve
+    // v = percent distance along normal vector to curve; hoistRadius = max dist from curve
+    //     where v < 0.5 is below curve, v = 0.5 is on curve, v > 0.5 is above curve.
+    getHoistPosition(u, v, hoistRadius = 0.5)
+    {
+        let vertex = this.getVertexAtPercentArcLength(u);
+        let P = vertex.position;
+        let N = vertex.normalVector;
+        v -= 0.5;
+        return { x: P.x + v * N.x * hoistRadius, y: P.y + v * N.y * hoistRadius };
+    }
+}
+
+// NOTE: this code only works online or when running a local server
+//  (run server.py and open localhost:8337 in a browser, the select this file)
+
+// imageData: [r0,g0,b0,a0, r1,g1,b1,a1, r2,g2,b2,a2, ...]
+//   where each value is an int from 0 to 255
+function getPixelDataRGBA(imageData, rowNum, columnNum)
+{
+    let pixelStartIndex = 4 * (rowNum * imageData.width + columnNum);
+    //   red = imageData.data[pixelStartIndex]
+    // green = imageData.data[pixelStartIndex+1]
+    //  blue = imageData.data[pixelStartIndex+2]
+    // alpha = imageData.data[pixelStartIndex+3]
+    return { r: imageData.data[pixelStartIndex], 
+             g: imageData.data[pixelStartIndex+1], 
+             b: imageData.data[pixelStartIndex+2],
+             a: imageData.data[pixelStartIndex+3]  };
+}
+
+function samplePixelDataRGBA_Nearest(imageData, u, v, repeatU=1, repeatV=1)
+{
+    let columnNum = Math.round( u*(imageData.width-1) );
+    let rowNum = Math.round( (1-v)*(imageData.height-1) );
+                
+    columnNum = (repeatU * columnNum) % imageData.width;
+    rowNum = (repeatV * rowNum) % imageData.height;
+
+    return getPixelDataRGBA(imageData, rowNum, columnNum);
+}
+
+function samplePixelDataRGBA_Bilinear(imageData, u, v, repeatU=1, repeatV=1)
+{
+    v = 1 - v; // need to invert vertical axis
+    let rawColumnNum = repeatU * u*(imageData.width-1) % imageData.width;
+    let rawRowNum = repeatV * v*(imageData.height-1) % imageData.height;
+    let columnNum = Math.floor( rawColumnNum );
+    let rowNum = Math.floor( rawRowNum );
+    // get colors of four closest pixels
+    let C00 = getPixelDataRGBA(imageData, rowNum+0, columnNum+0); // bottom left 
+    let C10 = getPixelDataRGBA(imageData, rowNum+0, columnNum+1); // bottom right
+    let C01 = getPixelDataRGBA(imageData, Math.max(0,rowNum-1), columnNum+0); // top left
+    let C11 = getPixelDataRGBA(imageData, Math.max(0,rowNum-1), columnNum+1); // top right
+    let fracU = rawColumnNum % 1, fracV = 1 - rawRowNum % 1; // this is correct; tested at large scales
+
+    let Cu0 = { r: Math.round( (1-fracU)*C00.r + fracU*C10.r ),
+                g: Math.round( (1-fracU)*C00.g + fracU*C10.g ),
+                b: Math.round( (1-fracU)*C00.b + fracU*C10.b ),
+                a: Math.round( (1-fracU)*C00.a + fracU*C10.a )  };
+
+    let Cu1 = { r: Math.round( (1-fracU)*C01.r + fracU*C11.r ),
+                g: Math.round( (1-fracU)*C01.g + fracU*C11.g ),
+                b: Math.round( (1-fracU)*C01.b + fracU*C11.b ),
+                a: Math.round( (1-fracU)*C01.a + fracU*C11.a )  };
+
+    let Cuv = { r: Math.round( (1-fracV)*Cu0.r + fracV*Cu1.r ),
+                g: Math.round( (1-fracV)*Cu0.g + fracV*Cu1.g ),
+                b: Math.round( (1-fracV)*Cu0.b + fracV*Cu1.b ),
+                a: Math.round( (1-fracV)*Cu0.a + fracV*Cu1.a )  };
+
+    return Cuv;    
+}
+
+function convertRGBAtoHexString( RGBA )
+{
+    return "#" + RGBA.r.toString(16).padStart(2, "0")
+               + RGBA.g.toString(16).padStart(2, "0")
+               + RGBA.b.toString(16).padStart(2, "0")
+               + RGBA.a.toString(16).padStart(2, "0");
+}
+
+// TODO: simplify by just one function with optional color image
+
+function graphHoistPointsIsNeverUsed( paramFunc, uPointNum=20, vPointNum=5, hoistRadius=0.5 )
+{
+    for (let uIndex = 0; uIndex < uPointNum; uIndex++)
+    {
+        let uPercent = uIndex / (uPointNum - 1);
+        for (let vIndex = 0; vIndex < vPointNum; vIndex++)
+        {
+            let vPercent = vIndex / (vPointNum - 1);
+            let position = paramFunc.getHoistPosition( uPercent, vPercent, hoistRadius );
+            graphPoint( position, "#FF0000", 4 );
+        }
+    }
+}
+
+function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoistRadius=0.5, repeatCount=3 )
+{
+
+    for (let uIndex = 0; uIndex < uPointNum; uIndex++)
+    {
+        let u = uIndex / (uPointNum - 1);
+
+        // optional: use setTimeout to slow down the graphing, to watch progress along curve        
+        setTimeout( function() {
+
+            for (let vIndex = 0; vIndex < vPointNum; vIndex++)
+            {
+                let v = vIndex / (vPointNum - 1);
+
+                let position = paramFunc.getHoistPosition( u, v, hoistRadius );
+
+                // let rgb = samplePixelDataRGB_Nearest( imageData, u, v, repeatCount );
+                let rgb = samplePixelDataRGBA_Bilinear( imageData, u, v, repeatCount );
+                
+                let hexColor = convertRGBAtoHexString( rgb );
+
+                graphPoint( position, hexColor, 1 );
+            }
+
+        // optional: use setTimeout to slow down the graphing, to watch progress along curve        
+        }, 1 )
+    }
+
+}
+
+function saveImage()
+{
+    let image = canvas.toDataURL("image/png");
+    let element = document.createElement("a");
+    element.setAttribute("href", image);
+    element.setAttribute("download", "calligram.png");
+    element.click();
+    element.remove();
+}
+
+</script>
+
+<hr>
+<hr>
+
+</body>
+</html>
