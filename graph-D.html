@@ -198,9 +198,11 @@
 <div id="tabs-4">
 <p>A <i>calligram</i> is a set of words drawn in a way to create a thematically related image. This application was designed to draw and style text along a path or curve
 specified mathematically. This can be used to create mathematical calligrams (for example, by drawing a description of or equation of a curve along the curve itself),
-or other visually interesting patterns. </p>
+as well as other visually interesting patterns. </p>
 
-<p>There are separate buttons for clearing the canvas and drawing on the canvas, so that multiple curves or text drawings can be combined in one image, if desired.</p>
+<p>Click the tabs above for menus containing the adjustable drawing parameters, and click the buttons below to draw the axis, curve, or text. </p>
+
+<p>There are separate buttons for clearing the canvas and drawing various objects on the canvas, so that multiple curves or text drawings can be combined in one image, if desired.</p>
 
 <p>Any image can be loaded to be used as a canvas background. If an image previously created and saved with this application is loaded, it will also restore all settings in use at the time of saving.</p>
 </div>
@@ -220,7 +222,8 @@ or other visually interesting patterns. </p>
 <img id="rainbowGradientImage" src="rainbow.jpg" hidden />
 <canvas id="textCanvas"></canvas>
 <hr>
-<canvas id="curveCanvas" width="1024" height="1024"></canvas>
+<canvas id="curveCanvas" width="1024" height="1024" ></canvas>
+<canvas id="undoCanvas"  width="1024" height="1024" style="display:none;"></canvas>
 </center>
 <input type="file" id="loadImageInput" style="display:none;" />
 
@@ -232,6 +235,8 @@ var canvas = document.getElementById("curveCanvas");
 var context = canvas.getContext("2d");
 var textCanvas = document.getElementById("textCanvas");
 var textContext = textCanvas.getContext("2d");
+var undoCanvas = document.getElementById("undoCanvas");
+var undoContext = undoCanvas.getContext("2d");
 
 var rainbowGradientImage = document.getElementById("rainbowGradientImage");
 
@@ -252,7 +257,7 @@ $( "button" ).button();
 $( ".selectMenu" ).selectmenu( {width: 200} );
 $( ".checkbox" ).checkboxradio().css( {padding: 12} );;
 $( ".colorPicker" ).spectrum( {color: "#000000"} );
-$( "#tabs" ).tabs( {collapsible: true, active: 1} );
+$( "#tabs" ).tabs( {collapsible: true, active: 3} );
 
 // assign functions to buttons
 $( "#clearDrawAreaButton" ).on( "click", clearCanvas );
@@ -406,6 +411,22 @@ function updateAxisData()
         0, -canvas.height/axisData.yRange,
         -canvas.width/axisData.xRange * axisData.xMin, 
         +canvas.height/axisData.yRange * axisData.yMax );
+
+    undoContext.setTransform( 
+        canvas.width/axisData.xRange, 0,
+        0, -canvas.height/axisData.yRange,
+        -canvas.width/axisData.xRange * axisData.xMin, 
+        +canvas.height/axisData.yRange * axisData.yMax );
+
+    // store previous image
+    undoContext.drawImage(canvas, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange);
+}
+
+// TODO
+function undoLastDraw()
+{
+    // store previous image
+    context.drawImage(undoCanvas, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange);
 }
 
 function clearCanvas()
@@ -419,6 +440,9 @@ function clearCanvas()
 
 function drawAxes()
 {
+    // store previous image
+    //undoContext.drawImage(canvas, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange);
+
     updateAxisData();
 
     let axisColor = $("#axisColor").spectrum('get').toHexString();
@@ -455,6 +479,9 @@ function drawAxes()
 
 function drawCurve()
 {
+    // store previous image
+    //undoContext.drawImage(canvas, 0, 0);
+
     updateAxisData();
 
     let xFuncString = $("#xFuncInput").val();
@@ -474,6 +501,9 @@ function drawCurve()
 
 function drawTextAlongCurve()
 {
+    // store previous image
+    //undoContext.drawImage(canvas, 0, 0);
+
     updateAxisData();
 
     let xFuncString = $("#xFuncInput").val();
@@ -493,11 +523,7 @@ function drawTextAlongCurve()
     graphHoistImage( F, imageData, xResolution, yResolution, imageHeightOnCurve, repeatCount );
 }
 
-// TODO
-function undoLastDraw()
-{
-    
-}
+
 
 // used by preset functions
 function updateInputFields(xFuncStr, yFuncStr, tMin, tMax, xMin=-5, xMax=5, yMin=-5, yMax=5)
@@ -941,16 +967,27 @@ function graphHoistImage( paramFunc, imageData, uPointNum=20, vPointNum=5, hoist
 
 }
 
-// TODO
-const dataFieldNameArray = 
+// data stored in jpeg exif data
+const textDataFieldNameArray = 
 [
     "xMinInput", "xMaxInput", "yMinInput", "yMaxInput",
-    "xFuncInput", "yFuncInput", "tMinInput", "tMaxInput" 
+    "axisThickness", "curveThickness", "textInput",
+    "xFuncInput", "yFuncInput", "tMinInput", "tMaxInput",
+    "fontHeightOnCurve", "borderThickness", "linesAboveBelowThickness",
+    "repeatCount", "xResolution", "yResolution"
 ];
 
-// TODO: different types of data (hex, boolean)
-const hexDataFieldNameArray = []
-const checkDataFieldNameArray = []
+const colorDataFieldNameArray = [
+    "areaBackgroundColor", "axisColor", "curveColor",
+    "fontColor", "borderColor", "textBackgroundColor", "linesAboveBelowColor"
+];
+
+// TODO: different types of data 
+
+// bool: drawTickMarksCheckbox fontBoldCheckbox drawBorderCheckbox linesAboveBelowCheckbox
+const checkDataFieldNameArray = [];
+// selectbox: curveSelect fontSelect backgroundStyleSelect (not sure how important these are)
+const selectFieldNameArray = [];
 
 // ultra TODO: merge into an object list: dataName:dataType = "string"|"hexcolor"|"boolean"
 
@@ -960,11 +997,19 @@ function saveImage()
 
     var customDataObject = {};
 
-    for (let i = 0; i < dataFieldNameArray.length; i++)
+    for (let i = 0; i < textDataFieldNameArray.length; i++)
     {
-        let dataFieldName = dataFieldNameArray[i];
+        let dataFieldName = textDataFieldNameArray[i];
         customDataObject[dataFieldName] = $("#" + dataFieldName).val();
     };
+
+    for (let i = 0; i < colorDataFieldNameArray.length; i++)
+    {
+        let dataFieldName = colorDataFieldNameArray[i];
+        customDataObject[dataFieldName] = $("#" + dataFieldName).spectrum('get').toHexString();
+    };
+
+    console.log(customDataObject);
 
     var customDataString = JSON.stringify( customDataObject );
 
@@ -994,7 +1039,12 @@ function loadImage(event)
     // display image on canvas
     let imgSrc = window.URL.createObjectURL(file);
     let img = new Image();
-    img.onload = function() { context.drawImage(img, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange); }
+    img.onload = function() 
+    { 
+        context.scale(1,-1);
+        context.drawImage(img, axisData.xMin, axisData.yMin, axisData.xRange, axisData.yRange); 
+        context.scale(1,-1);
+    }
     img.src = imgSrc;
 
 
@@ -1021,11 +1071,18 @@ function loadImage(event)
         // if parse throws an exception (if custom data is not a valid JSON string), then an error is thrown
         var customDataObject = JSON.parse(customDataString);
 
+        console.log(customDataObject)
         // restore field data
-        for (let i = 0; i < dataFieldNameArray.length; i++)
+        for (let i = 0; i < textDataFieldNameArray.length; i++)
         {
-            let dataFieldName = dataFieldNameArray[i];
+            let dataFieldName = textDataFieldNameArray[i];
             $("#" + dataFieldName).val( customDataObject[dataFieldName] );
+        };
+
+        for (let i = 0; i < colorDataFieldNameArray.length; i++)
+        {
+            let dataFieldName = colorDataFieldNameArray[i];
+            $("#" + dataFieldName).spectrum('set', customDataObject[dataFieldName]);
         };
 
         // console.log(customDataString);
